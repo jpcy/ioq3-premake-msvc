@@ -14,6 +14,7 @@ if not os.isdir(IOQ3_PATH) then
 end
 
 local IOQ3_CODE_PATH = path.join(IOQ3_PATH, "code")
+local IOQ3_RENDERER_BGFX = path.join(path.getabsolute(".."), "ioq3-renderer-bgfx")
 
 if os.get() == "windows" then
 	os.mkdir("build")
@@ -30,6 +31,13 @@ if os.get() == "windows" then
 	
 	-- The icon path is hardcoded in sys\win_resource.rc. Copy it to where it needs to be.
 	os.copyfile(path.join(IOQ3_PATH, "misc/quake3.ico"), "quake3.ico")
+	
+	if os.isdir(IOQ3_RENDERER_BGFX) then
+		os.copyfile(path.join(IOQ3_RENDERER_BGFX, "D3DCompiler_47.dll"), "build/bin_x86/D3DCompiler_47.dll")
+		os.copyfile(path.join(IOQ3_RENDERER_BGFX, "D3DCompiler_47.dll"), "build/bin_x64/D3DCompiler_47.dll")
+		os.copyfile(path.join(IOQ3_RENDERER_BGFX, "D3DCompiler_47.dll"), "build/bin_debug_x86/D3DCompiler_47.dll")
+		os.copyfile(path.join(IOQ3_RENDERER_BGFX, "D3DCompiler_47.dll"), "build/bin_debug_x64/D3DCompiler_47.dll")
+	end
 end
 
 -----------------------------------------------------------------------------
@@ -456,9 +464,15 @@ project "renderer_opengl2"
 	configuration {}
 	
 	configuration "**.glsl"
-		buildmessage "Stringifying %{file.basename}.glsl"
+		buildmessage "Stringifying %{file.name}"
 		buildcommands("cscript.exe \"" .. path.join(IOQ3_PATH, "misc/msvc/glsl_stringify.vbs") .. "\" //Nologo \"%{file.relpath}\" \"dynamic\\renderergl2\\%{file.basename}.c\"")
 		buildoutputs "build\\dynamic\\renderergl2\\%{file.basename}.c"
+
+-----------------------------------------------------------------------------
+
+if os.isdir(IOQ3_RENDERER_BGFX) then
+	dofile(path.join(IOQ3_RENDERER_BGFX, "renderer_bgfx.lua"))
+end
 
 -----------------------------------------------------------------------------
 
@@ -839,6 +853,13 @@ project "libspeex"
 project "zlib"
 	kind "StaticLib"
 	files { path.join(IOQ3_CODE_PATH, "zlib/*.c"), path.join(IOQ3_CODE_PATH, "zlib/*.h") }
+	
+-----------------------------------------------------------------------------
+
+if os.isdir(IOQ3_RENDERER_BGFX) then
+	dofile(path.join(IOQ3_RENDERER_BGFX, "bgfx.lua"))
+	dofile(path.join(IOQ3_RENDERER_BGFX, "shaderc.lua"))
+end
 
 -----------------------------------------------------------------------------
 
