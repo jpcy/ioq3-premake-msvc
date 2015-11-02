@@ -58,6 +58,20 @@ newoption
 
 newoption
 {
+	trigger = "rename-baseq3",
+	description = "Rename the baseq3 project",
+	value = "NAME"
+}
+
+newoption
+{
+	trigger = "rename-missionpack",
+	description = "Rename the missionpack project",
+	value = "NAME"
+}
+
+newoption
+{
 	trigger = "standalone",
 	description = "Remove the dependency on Q3A"
 }
@@ -529,33 +543,36 @@ if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
 	dofile(path.join(IOQ3_RENDERER_BGFX, "renderer_bgfx.lua"))
 end
 
-function setGameTarget(dir, name)
+function setupGameDllProject(mod, name)
+	project(mod .. "_" .. name .. "_dll")
+	kind "SharedLib"
+	
+	if _OPTIONS["standalone"] then
+		defines "STANDALONE"
+	end
+	
 	configuration { "Debug", "not x64" }
-		targetdir("build/bin_debug_x86/" .. dir)
+		targetdir("build/bin_debug_x86/" .. mod)
 		targetname(name .. "x86")
 	configuration { "Release", "not x64" }
-		targetdir("build/bin_x86/" .. dir)
+		targetdir("build/bin_x86/" .. mod)
 		targetname(name .. "x86")
 	configuration { "Debug", "x64" }
-		targetdir("build/bin_debug_x64/" .. dir)
+		targetdir("build/bin_debug_x64/" .. mod)
 		targetname(name .. "x86_64")
 	configuration { "Release", "x64" }
-		targetdir("build/bin_x64/" .. dir)
+		targetdir("build/bin_x64/" .. mod)
 		targetname(name .. "x86_64")
 	configuration {}
+	
+	links "winmm"
 end
 
 group "game_dll"
 
 if not (_OPTIONS["disable-baseq3"] or _OPTIONS["disable-game-dll"]) then
-project "baseq3_cgame_dll"
-	kind "SharedLib"
-	setGameTarget("baseq3", "cgame")
-	
-	if _OPTIONS["standalone"] then
-		defines "STANDALONE"
-	end
 
+setupGameDllProject(_OPTIONS["rename-baseq3"] or "baseq3", "cgame")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "cgame/*.c"),
@@ -574,16 +591,7 @@ project "baseq3_cgame_dll"
 		path.join(IOQ3_CODE_PATH, "game/bg_lib.*")
 	}
 	
-	links "winmm"
-	
-project "baseq3_game_dll"
-	kind "SharedLib"
-	setGameTarget("baseq3", "qagame")
-	
-	if _OPTIONS["standalone"] then
-		defines "STANDALONE"
-	end
-	
+setupGameDllProject(_OPTIONS["rename-baseq3"] or "baseq3", "qagame")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/*.c"),
@@ -599,17 +607,8 @@ project "baseq3_game_dll"
 		path.join(IOQ3_CODE_PATH, "game/bg_lib.*"),
 		path.join(IOQ3_CODE_PATH, "game/g_rankings.c")
 	}
-	
-	links "winmm"
 
-project "baseq3_ui_dll"
-	kind "SharedLib"
-	setGameTarget("baseq3", "ui")
-	
-	if _OPTIONS["standalone"] then
-		defines "STANDALONE"
-	end
-	
+setupGameDllProject(_OPTIONS["rename-baseq3"] or "baseq3", "ui")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/bg_misc.c"),
@@ -631,24 +630,13 @@ project "baseq3_ui_dll"
 		path.join(IOQ3_CODE_PATH, "q3_ui/ui_signup.c"),
 		path.join(IOQ3_CODE_PATH, "q3_ui/ui_specifyleague.c")
 	}
-	
-	links "winmm"
 end
 
 if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-dll"]) then
-project "missionpack_cgame_dll"
-	kind "SharedLib"
-	setGameTarget("missionpack", "cgame")
-	
-	defines
-	{
-		"MISSIONPACK"
-	}
-	
-	if _OPTIONS["standalone"] then
-		defines "STANDALONE"
-	end
 
+setupGameDllProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame")
+	defines	{ "MISSIONPACK" }
+	
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "cgame/*.c"),
@@ -666,22 +654,10 @@ project "missionpack_cgame_dll"
 	{
 		path.join(IOQ3_CODE_PATH, "game/bg_lib.*")
 	}
-	
-	links "winmm"
 
-project "missionpack_game_dll"
-	kind "SharedLib"
-	setGameTarget("missionpack", "qagame")
+setupGameDllProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame")
+	defines	{ "MISSIONPACK" }
 	
-	defines
-	{
-		"MISSIONPACK"
-	}
-	
-	if _OPTIONS["standalone"] then
-		defines "STANDALONE"
-	end
-
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/*.c"),
@@ -697,16 +673,9 @@ project "missionpack_game_dll"
 		path.join(IOQ3_CODE_PATH, "game/bg_lib.*"),
 		path.join(IOQ3_CODE_PATH, "game/g_rankings.c")
 	}
-	
-	links "winmm"
 
-project "missionpack_ui_dll"
-	kind "SharedLib"
-	setGameTarget("missionpack", "ui")
-	
-	if _OPTIONS["standalone"] then
-		defines "STANDALONE"
-	end
+setupGameDllProject(_OPTIONS["rename-missionpack"] or "missionpack", "ui")
+	defines	{ "MISSIONPACK" }
 	
 	files
 	{
@@ -724,7 +693,8 @@ end
 
 group "game_qvm"
 
-function setupQvmBuild(mod, qvm, syscalls, defines)
+function setupGameQvmProject(mod, qvm, syscalls, defines)
+	project(mod .. "_" .. qvm .. "_qvm")
 	kind "StaticLib"
 	links { "lcc", "q3asm", "q3cpp", "q3rcc" } -- build dependencies
 	
@@ -743,9 +713,7 @@ function setupQvmBuild(mod, qvm, syscalls, defines)
 end
 
 if not (_OPTIONS["disable-baseq3"] or _OPTIONS["disable-game-qvm"]) then
-project "baseq3_cgame_qvm"
-	setupQvmBuild("baseq3", "cgame", "cgame/cg_syscalls.asm", "-DQ3_VM")
-	
+setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "cgame", "cgame/cg_syscalls.asm", "-DQ3_VM")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "cgame/*.c"),
@@ -764,9 +732,7 @@ project "baseq3_cgame_qvm"
 		path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.c")
 	}
 
-project "baseq3_game_qvm"
-	setupQvmBuild("baseq3", "qagame", "game/g_syscalls.asm", "-DQ3_VM")
-	
+setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "qagame", "game/g_syscalls.asm", "-DQ3_VM")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/*.c"),
@@ -783,9 +749,7 @@ project "baseq3_game_qvm"
 		path.join(IOQ3_CODE_PATH, "game/g_syscalls.c")
 	}
 	
-project "baseq3_ui_qvm"
-	setupQvmBuild("baseq3", "ui", "ui/ui_syscalls.asm", "-DQ3_VM")
-	
+setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "ui", "ui/ui_syscalls.asm", "-DQ3_VM")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/bg_misc.c"),
@@ -810,9 +774,7 @@ project "baseq3_ui_qvm"
 end
 
 if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-qvm"]) then
-project "missionpack_cgame_qvm"
-	setupQvmBuild("missionpack", "cgame", "cgame/cg_syscalls.asm", "-DQ3_VM -DMISSIONPACK")
-
+setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame", "cgame/cg_syscalls.asm", "-DQ3_VM -DMISSIONPACK")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "cgame/*.c"),
@@ -831,9 +793,7 @@ project "missionpack_cgame_qvm"
 		path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.c")
 	}
 	
-project "missionpack_game_qvm"
-	setupQvmBuild("missionpack", "qagame", "game/g_syscalls.asm", "-DQ3_VM -DMISSIONPACK")
-
+setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame", "game/g_syscalls.asm", "-DQ3_VM -DMISSIONPACK")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/*.c"),
@@ -850,9 +810,7 @@ project "missionpack_game_qvm"
 		path.join(IOQ3_CODE_PATH, "game/g_syscalls.c")
 	}
 
-project "missionpack_ui_qvm"
-	setupQvmBuild("missionpack", "ui", "ui/ui_syscalls.asm", "-DQ3_VM -DMISSIONPACK")
-	
+setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "ui", "ui/ui_syscalls.asm", "-DQ3_VM -DMISSIONPACK")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/bg_lib.*"),
