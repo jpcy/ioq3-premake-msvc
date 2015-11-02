@@ -1,10 +1,70 @@
 newoption
 {
-	trigger = "standalone",
-	description = "Build the engine standalone"
+	trigger = "disable-client",
+	description = "Disable the ioquake3 project"
 }
 
------------------------------------------------------------------------------
+newoption
+{
+	trigger = "disable-server",
+	description = "Disable the dedicated server project"
+}
+
+newoption
+{
+	trigger = "disable-baseq3",
+	description = "Disable the baseq3 projects"
+}
+
+newoption
+{
+	trigger = "disable-missionpack",
+	description = "Disable the missionpack projects"
+}
+
+newoption
+{
+	trigger = "disable-renderer-gl1",
+	description = "Disable the OpenGL 1 renderer project"
+}
+
+newoption
+{
+	trigger = "disable-renderer-gl2",
+	description = "Disable the OpenGL 2 renderer project"
+}
+
+local IOQ3_RENDERER_BGFX = path.join(path.getabsolute(".."), "ioq3-renderer-bgfx")
+
+if os.isdir(IOQ3_RENDERER_BGFX) then
+	newoption
+	{
+		trigger = "disable-renderer-bgfx",
+		description = "Disable the bgfx renderer project"
+	}
+end
+
+newoption
+{
+	trigger = "disable-game-dll",
+	description = "Disable the game DLL projects"
+}
+
+newoption
+{
+	trigger = "disable-game-qvm",
+	description = "Disable the game QVM projects"
+}
+
+newoption
+{
+	trigger = "standalone",
+	description = "Remove the dependency on Q3A"
+}
+
+if _ACTION == nil then
+	return
+end
 
 local IOQ3_PATH = path.join(path.getabsolute(".."), "ioq3")
 
@@ -14,7 +74,6 @@ if not os.isdir(IOQ3_PATH) then
 end
 
 local IOQ3_CODE_PATH = path.join(IOQ3_PATH, "code")
-local IOQ3_RENDERER_BGFX = path.join(path.getabsolute(".."), "ioq3-renderer-bgfx")
 
 if os.get() == "windows" then
 	os.mkdir("build")
@@ -32,15 +91,13 @@ if os.get() == "windows" then
 	-- The icon path is hardcoded in sys\win_resource.rc. Copy it to where it needs to be.
 	os.copyfile(path.join(IOQ3_PATH, "misc/quake3.ico"), "quake3.ico")
 	
-	if os.isdir(IOQ3_RENDERER_BGFX) then
+	if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
 		os.copyfile(path.join(IOQ3_RENDERER_BGFX, "D3DCompiler_47.dll"), "build/bin_x86/D3DCompiler_47.dll")
 		os.copyfile(path.join(IOQ3_RENDERER_BGFX, "D3DCompiler_47.dll"), "build/bin_x64/D3DCompiler_47.dll")
 		os.copyfile(path.join(IOQ3_RENDERER_BGFX, "D3DCompiler_47.dll"), "build/bin_debug_x86/D3DCompiler_47.dll")
 		os.copyfile(path.join(IOQ3_RENDERER_BGFX, "D3DCompiler_47.dll"), "build/bin_debug_x64/D3DCompiler_47.dll")
 	end
 end
-
------------------------------------------------------------------------------
 
 solution "ioquake3"
 	language "C"
@@ -74,10 +131,9 @@ solution "ioquake3"
 	configuration { "Release", "x64" }
 		targetdir "build/bin_x64"
 	
------------------------------------------------------------------------------
-
 group "engine"
 
+if not _OPTIONS["disable-client"] then
 project "ioquake3"
 	kind "WindowedApp"
 	
@@ -102,9 +158,9 @@ project "ioquake3"
 		"USE_LOCAL_HEADERS"
 	}
 	
-	filter "options:standalone"
+	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
-	filter {}
+	end
 
 	files
 	{
@@ -187,10 +243,10 @@ project "ioquake3"
 		buildmessage "Assembling..."
 		buildcommands('ml64 /c /D idx64 /Zi /Fo"%{cfg.objdir}/%{file.basename}.asm.obj" "%{file.relpath}"')
 		buildoutputs '%{cfg.objdir}/%{file.basename}.asm.obj'
+end
 
------------------------------------------------------------------------------
-
-project "dedicated"
+if not _OPTIONS["disable-server"] then
+project "ioq3ded"
 	kind "ConsoleApp"
 	
 	configuration "x64"
@@ -208,9 +264,9 @@ project "dedicated"
 		"USE_LOCAL_HEADERS"
 	}
 	
-	filter "options:standalone"
+	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
-	filter {}
+	end
 
 	files
 	{
@@ -270,11 +326,11 @@ project "dedicated"
 		buildmessage "Assembling..."
 		buildcommands('ml64 /c /D idx64 /Zi /Fo"%{cfg.objdir}/%{file.basename}.asm.obj" "%{file.relpath}"')
 		buildoutputs '%{cfg.objdir}/%{file.basename}.asm.obj'
-		
------------------------------------------------------------------------------
+end
 
 group "renderer"
 
+if not _OPTIONS["disable-renderer-gl1"] then
 project "renderer_opengl1"
 	kind "SharedLib"
 	
@@ -294,9 +350,9 @@ project "renderer_opengl1"
 		"USE_LOCAL_HEADERS"
 	}
 	
-	filter "options:standalone"
+	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
-	filter {}
+	end
 	
 	files
 	{
@@ -348,9 +404,9 @@ project "renderer_opengl1"
 	configuration "x64"
 		buildoptions { "/wd\"4267\""} -- Silence size_t type conversion warnings
 		links { "SDL2/x64/SDL2" }
+end
 
------------------------------------------------------------------------------
-
+if not _OPTIONS["disable-renderer-gl2"] then
 project "renderer_opengl2"
 	kind "SharedLib"
 	
@@ -369,9 +425,9 @@ project "renderer_opengl2"
 		"USE_LOCAL_HEADERS"
 	}
 	
-	filter "options:standalone"
+	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
-	filter {}
+	end
 
 	files
 	{
@@ -467,14 +523,11 @@ project "renderer_opengl2"
 		buildmessage "Stringifying %{file.name}"
 		buildcommands("cscript.exe \"" .. path.join(IOQ3_PATH, "misc/msvc/glsl_stringify.vbs") .. "\" //Nologo \"%{file.relpath}\" \"dynamic\\renderergl2\\%{file.basename}.c\"")
 		buildoutputs "build\\dynamic\\renderergl2\\%{file.basename}.c"
-
------------------------------------------------------------------------------
-
-if os.isdir(IOQ3_RENDERER_BGFX) then
-	dofile(path.join(IOQ3_RENDERER_BGFX, "renderer_bgfx.lua"))
 end
 
------------------------------------------------------------------------------
+if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
+	dofile(path.join(IOQ3_RENDERER_BGFX, "renderer_bgfx.lua"))
+end
 
 function setGameTarget(dir, name)
 	configuration { "Debug", "not x64" }
@@ -494,15 +547,14 @@ end
 
 group "game_dll"
 
------------------------------------------------------------------------------
-
+if not (_OPTIONS["disable-baseq3"] or _OPTIONS["disable-game-dll"]) then
 project "baseq3_cgame_dll"
 	kind "SharedLib"
 	setGameTarget("baseq3", "cgame")
 	
-	filter "options:standalone"
+	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
-	filter {}
+	end
 
 	files
 	{
@@ -524,15 +576,13 @@ project "baseq3_cgame_dll"
 	
 	links "winmm"
 	
------------------------------------------------------------------------------
-
 project "baseq3_game_dll"
 	kind "SharedLib"
 	setGameTarget("baseq3", "qagame")
 	
-	filter "options:standalone"
+	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
-	filter {}
+	end
 	
 	files
 	{
@@ -552,15 +602,13 @@ project "baseq3_game_dll"
 	
 	links "winmm"
 
------------------------------------------------------------------------------
-
 project "baseq3_ui_dll"
 	kind "SharedLib"
 	setGameTarget("baseq3", "ui")
 	
-	filter "options:standalone"
+	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
-	filter {}
+	end
 	
 	files
 	{
@@ -585,9 +633,9 @@ project "baseq3_ui_dll"
 	}
 	
 	links "winmm"
+end
 
------------------------------------------------------------------------------
-
+if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-dll"]) then
 project "missionpack_cgame_dll"
 	kind "SharedLib"
 	setGameTarget("missionpack", "cgame")
@@ -597,9 +645,9 @@ project "missionpack_cgame_dll"
 		"MISSIONPACK"
 	}
 	
-	filter "options:standalone"
+	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
-	filter {}
+	end
 
 	files
 	{
@@ -621,8 +669,6 @@ project "missionpack_cgame_dll"
 	
 	links "winmm"
 
------------------------------------------------------------------------------
-
 project "missionpack_game_dll"
 	kind "SharedLib"
 	setGameTarget("missionpack", "qagame")
@@ -632,9 +678,9 @@ project "missionpack_game_dll"
 		"MISSIONPACK"
 	}
 	
-	filter "options:standalone"
+	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
-	filter {}
+	end
 
 	files
 	{
@@ -654,15 +700,13 @@ project "missionpack_game_dll"
 	
 	links "winmm"
 
------------------------------------------------------------------------------
-
 project "missionpack_ui_dll"
 	kind "SharedLib"
 	setGameTarget("missionpack", "ui")
 	
-	filter "options:standalone"
+	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
-	filter {}
+	end
 	
 	files
 	{
@@ -676,8 +720,7 @@ project "missionpack_ui_dll"
 	}
 	
 	links { "odbc32", "odbccp32" }
-
------------------------------------------------------------------------------
+end
 
 group "game_qvm"
 
@@ -699,8 +742,7 @@ function setupQvmBuild(mod, qvm, syscalls, defines)
 	}
 end
 
------------------------------------------------------------------------------
-
+if not (_OPTIONS["disable-baseq3"] or _OPTIONS["disable-game-qvm"]) then
 project "baseq3_cgame_qvm"
 	setupQvmBuild("baseq3", "cgame", "cgame/cg_syscalls.asm", "-DQ3_VM")
 	
@@ -722,8 +764,6 @@ project "baseq3_cgame_qvm"
 		path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.c")
 	}
 
------------------------------------------------------------------------------
-
 project "baseq3_game_qvm"
 	setupQvmBuild("baseq3", "qagame", "game/g_syscalls.asm", "-DQ3_VM")
 	
@@ -743,8 +783,6 @@ project "baseq3_game_qvm"
 		path.join(IOQ3_CODE_PATH, "game/g_syscalls.c")
 	}
 	
------------------------------------------------------------------------------
-
 project "baseq3_ui_qvm"
 	setupQvmBuild("baseq3", "ui", "ui/ui_syscalls.asm", "-DQ3_VM")
 	
@@ -769,9 +807,9 @@ project "baseq3_ui_qvm"
 		path.join(IOQ3_CODE_PATH, "q3_ui/ui_signup.c"),
 		path.join(IOQ3_CODE_PATH, "q3_ui/ui_specifyleague.c")
 	}
+end
 
------------------------------------------------------------------------------
-
+if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-qvm"]) then
 project "missionpack_cgame_qvm"
 	setupQvmBuild("missionpack", "cgame", "cgame/cg_syscalls.asm", "-DQ3_VM -DMISSIONPACK")
 
@@ -793,8 +831,6 @@ project "missionpack_cgame_qvm"
 		path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.c")
 	}
 	
------------------------------------------------------------------------------
-
 project "missionpack_game_qvm"
 	setupQvmBuild("missionpack", "qagame", "game/g_syscalls.asm", "-DQ3_VM -DMISSIONPACK")
 
@@ -813,8 +849,6 @@ project "missionpack_game_qvm"
 		path.join(IOQ3_CODE_PATH, "game/g_rankings.c"),
 		path.join(IOQ3_CODE_PATH, "game/g_syscalls.c")
 	}
-
------------------------------------------------------------------------------
 
 project "missionpack_ui_qvm"
 	setupQvmBuild("missionpack", "ui", "ui/ui_syscalls.asm", "-DQ3_VM -DMISSIONPACK")
@@ -835,11 +869,12 @@ project "missionpack_ui_qvm"
 	{
 		path.join(IOQ3_CODE_PATH, "ui/ui_syscalls.c")
 	}
-	
------------------------------------------------------------------------------
+end
 
 group "lib"
 
+-- If the client and server projects are disabled, disable the libs they use exclusively too.
+if not (_OPTIONS["disable-client"] and _OPTIONS["disable-server"]) then
 project "libspeex"
 	kind "StaticLib"
 	defines { "HAVE_CONFIG_H", "WIN32" } -- alloca is undefined if WIN32 is omitted. x64 needs it too.
@@ -848,21 +883,18 @@ project "libspeex"
 	includedirs { path.join(IOQ3_CODE_PATH, "libspeex/include") }
 	buildoptions { "/wd\"4018\"", "/wd\"4047\"", "/wd\"4244\"", "/wd\"4267\"", "/wd\"4305\"" } -- Silence some warnings
 		
------------------------------------------------------------------------------
-
 project "zlib"
 	kind "StaticLib"
 	files { path.join(IOQ3_CODE_PATH, "zlib/*.c"), path.join(IOQ3_CODE_PATH, "zlib/*.h") }
-	
------------------------------------------------------------------------------
+end
 
-if os.isdir(IOQ3_RENDERER_BGFX) then
+if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
 	dofile(path.join(IOQ3_RENDERER_BGFX, "bgfx.lua"))
 	dofile(path.join(IOQ3_RENDERER_BGFX, "shaderc.lua"))
 end
 
------------------------------------------------------------------------------
-
+-- Don't build tools used to build QVMs if they aren't used.
+if not ((_OPTIONS["disable-baseq3"] and _OPTIONS["disable-missionpack"]) or _OPTIONS["disable-game-qvm"]) then
 group "tool"
 
 project "lburg"
@@ -926,3 +958,4 @@ project "q3rcc"
 		buildmessage "lburg %{file.basename}"
 		buildcommands("\"" .. path.join("%{cfg.targetdir}", "lburg.exe") .. "\" \"%{file.relpath}\" > \"dynamic\\%{file.basename}.c\"")
 		buildoutputs "build\\dynamic\\%{file.basename}.c"
+end
