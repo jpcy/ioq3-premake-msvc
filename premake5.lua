@@ -700,7 +700,7 @@ function setupGameQvmProject(mod, qvm, syscalls, defines)
 	
 	configuration "**.c"
 		buildmessage "lcc %{file.name}"
-		buildcommands("\"%{cfg.targetdir}\\lcc.exe\" " .. defines .. " -S -Wf-target=bytecode -Wf-g -Wo-lccdir=\"%{cfg.targetdir}\" -o \"%{cfg.objdir}\\%{file.basename}.asm\" \"%{file.relpath}\"")
+		buildcommands("\"%{cfg.targetdir}\\lcc.exe\" " .. defines .. " -Wo-lccdir=\"%{cfg.targetdir}\" -o \"%{cfg.objdir}\\%{file.basename}.asm\" \"%{file.relpath}\"")
 		buildoutputs "%{cfg.objdir}\\%{file.basename}.asm"
 	configuration {}
 	
@@ -713,7 +713,7 @@ function setupGameQvmProject(mod, qvm, syscalls, defines)
 end
 
 if not (_OPTIONS["disable-baseq3"] or _OPTIONS["disable-game-qvm"]) then
-setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "cgame", "cgame/cg_syscalls.asm", "-DQ3_VM")
+setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "cgame", "cgame/cg_syscalls.asm", "-DCGAME")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "cgame/*.c"),
@@ -732,7 +732,7 @@ setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "cgame", "cgame/cg_sy
 		path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.c")
 	}
 
-setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "qagame", "game/g_syscalls.asm", "-DQ3_VM")
+setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "qagame", "game/g_syscalls.asm", "-DQAGAME")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/*.c"),
@@ -749,7 +749,7 @@ setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "qagame", "game/g_sys
 		path.join(IOQ3_CODE_PATH, "game/g_syscalls.c")
 	}
 	
-setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "ui", "ui/ui_syscalls.asm", "-DQ3_VM")
+setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "ui", "ui/ui_syscalls.asm", "-DUI")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/bg_misc.c"),
@@ -774,7 +774,7 @@ setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "ui", "ui/ui_syscalls
 end
 
 if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-qvm"]) then
-setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame", "cgame/cg_syscalls.asm", "-DQ3_VM -DMISSIONPACK")
+setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame", "cgame/cg_syscalls.asm", "-DCGAME -DMISSIONPACK")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "cgame/*.c"),
@@ -793,7 +793,7 @@ setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame", "c
 		path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.c")
 	}
 	
-setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame", "game/g_syscalls.asm", "-DQ3_VM -DMISSIONPACK")
+setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame", "game/g_syscalls.asm", "-DQAGAME -DMISSIONPACK")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/*.c"),
@@ -810,7 +810,7 @@ setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame", "
 		path.join(IOQ3_CODE_PATH, "game/g_syscalls.c")
 	}
 
-setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "ui", "ui/ui_syscalls.asm", "-DQ3_VM -DMISSIONPACK")
+setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "ui", "ui/ui_syscalls.asm", "-DUI -DMISSIONPACK")
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/bg_lib.*"),
