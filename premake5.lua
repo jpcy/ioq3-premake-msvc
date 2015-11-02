@@ -708,7 +708,7 @@ function setupGameQvmProject(mod, qvm, syscalls, defines)
 	{
 		"cd %{cfg.objdir}",
 		"dir /b *.asm > files.q3asm",
-		"\"$(TargetDir)/q3asm.exe\" -o \"$(TargetDir)/" .. mod .. "/" .. qvm .. "\" -f files.q3asm " .. path.join(IOQ3_CODE_PATH, syscalls)
+		"\"$(TargetDir)/q3asm.exe\" -o \"$(TargetDir)/" .. mod .. "/vm/" .. qvm .. "\" -f files.q3asm " .. path.join(IOQ3_CODE_PATH, syscalls)
 	}
 end
 
