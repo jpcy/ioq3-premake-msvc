@@ -693,140 +693,309 @@ end
 
 group "game_qvm"
 
-function setupGameQvmProject(mod, qvm, syscalls, defines)
-	project(mod .. "_" .. qvm .. "_qvm")
+function gameQvmProject(_mod, _qvm, _defines, _files)
+	project(_mod .. "_" .. _qvm .. "_qvm")
 	kind "StaticLib"
+	files(_files)
 	links { "lcc", "q3asm", "q3cpp", "q3rcc" } -- build dependencies
 	
 	configuration "**.c"
 		buildmessage "lcc %{file.name}"
-		buildcommands("\"%{cfg.targetdir}\\lcc.exe\" " .. defines .. " -Wo-lccdir=\"%{cfg.targetdir}\" -o \"%{cfg.objdir}\\%{file.basename}.asm\" \"%{file.relpath}\"")
+		buildcommands("\"%{cfg.targetdir}\\lcc.exe\" " .. _defines .. " -Wo-lccdir=\"%{cfg.targetdir}\" -o \"%{cfg.objdir}\\%{file.basename}.asm\" \"%{file.relpath}\"")
 		buildoutputs "%{cfg.objdir}\\%{file.basename}.asm"
 	configuration {}
+	
+	local asmFiles = ""
+	
+	for _,v in pairs(_files) do
+		local ext = path.getextension(v)
+		
+		if ext == ".asm" then
+			asmFiles = asmFiles .. v .. " "
+		elseif ext == ".c" then
+			asmFiles = asmFiles .. path.getbasename(v) .. ".asm "
+		end
+	end
 	
 	postbuildcommands
 	{
 		"cd %{cfg.objdir}",
-		"dir /b *.asm > files.q3asm",
-		"\"$(TargetDir)/q3asm.exe\" -o \"$(TargetDir)/" .. mod .. "/vm/" .. qvm .. "\" -f files.q3asm " .. path.join(IOQ3_CODE_PATH, syscalls)
+		"\"$(TargetDir)/q3asm.exe\" -o \"$(TargetDir)/" .. _mod .. "/vm/" .. _qvm .. "\" " .. asmFiles
 	}
 end
 
 if not (_OPTIONS["disable-baseq3"] or _OPTIONS["disable-game-qvm"]) then
-setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "cgame", "cgame/cg_syscalls.asm", "-DCGAME")
-	files
+	local baseq3_cgame_files =
 	{
-		path.join(IOQ3_CODE_PATH, "cgame/*.c"),
-		path.join(IOQ3_CODE_PATH, "cgame/*.h"),
-		path.join(IOQ3_CODE_PATH, "game/bg_*.c"),
-		path.join(IOQ3_CODE_PATH, "game/bg_*.h"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_main.c"), -- must be first for q3asm
+		path.join(IOQ3_CODE_PATH, "cgame/cg_consolecmds.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_draw.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_drawtools.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_effects.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_ents.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_event.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_info.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_local.h"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_localents.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_marks.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_particles.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_players.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_playerstate.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_predict.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_public.h"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_scoreboard.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_servercmds.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_snapshot.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.asm"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_view.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_weapons.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_lib.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_lib.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_local.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_misc.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_pmove.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_public.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_slidemove.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_math.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/surfaceflags.h")
-	}
-	
-	excludes
-	{
-		path.join(IOQ3_CODE_PATH, "cgame/cg_newdraw.c"),
-		path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.c")
 	}
 
-setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "qagame", "game/g_syscalls.asm", "-DQAGAME")
-	files
+	local baseq3_qagame_files =
 	{
-		path.join(IOQ3_CODE_PATH, "game/*.c"),
-		path.join(IOQ3_CODE_PATH, "game/*.h"),
+		path.join(IOQ3_CODE_PATH, "game/g_main.c"), -- must be first for q3asm
+		path.join(IOQ3_CODE_PATH, "game/ai_chat.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_chat.h"),
+		path.join(IOQ3_CODE_PATH, "game/ai_cmd.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_cmd.h"),
+		path.join(IOQ3_CODE_PATH, "game/ai_dmnet.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_dmnet.h"),
+		path.join(IOQ3_CODE_PATH, "game/ai_dmq3.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_dmq3.h"),
+		path.join(IOQ3_CODE_PATH, "game/ai_main.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_main.h"),
+		path.join(IOQ3_CODE_PATH, "game/ai_team.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_team.h"),
+		path.join(IOQ3_CODE_PATH, "game/ai_vcmd.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_vcmd.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_lib.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_lib.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_local.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_misc.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_pmove.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_public.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_slidemove.c"),
+		path.join(IOQ3_CODE_PATH, "game/chars.h"),
+		path.join(IOQ3_CODE_PATH, "game/g_active.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_arenas.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_bot.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_client.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_cmds.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_combat.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_items.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_local.h"),
+		path.join(IOQ3_CODE_PATH, "game/g_mem.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_misc.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_missile.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_mover.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_public.h"),
+		path.join(IOQ3_CODE_PATH, "game/g_session.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_spawn.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_svcmds.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_syscalls.asm"),
+		path.join(IOQ3_CODE_PATH, "game/g_target.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_team.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_team.h"),
+		path.join(IOQ3_CODE_PATH, "game/g_trigger.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_utils.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_weapon.c"),
+		path.join(IOQ3_CODE_PATH, "game/inv.h"),
+		path.join(IOQ3_CODE_PATH, "game/match.h"),
+		path.join(IOQ3_CODE_PATH, "game/syn.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_math.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/surfaceflags.h")
 	}
-	
-	excludes
+
+	local baseq3_ui_files =
 	{
-		path.join(IOQ3_CODE_PATH, "game/g_rankings.c"),
-		path.join(IOQ3_CODE_PATH, "game/g_syscalls.c")
-	}
-	
-setupGameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "ui", "ui/ui_syscalls.asm", "-DUI")
-	files
-	{
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_main.c"), -- must be first for q3asm
+		path.join(IOQ3_CODE_PATH, "game/bg_lib.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_lib.h"),
 		path.join(IOQ3_CODE_PATH, "game/bg_misc.c"),
-		path.join(IOQ3_CODE_PATH, "game/bg_lib.*"),
-		path.join(IOQ3_CODE_PATH, "q3_ui/*.c"),
-		path.join(IOQ3_CODE_PATH, "q3_ui/*.h"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_addbots.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_atoms.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_cdkey.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_cinematics.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_confirm.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_connect.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_controls2.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_credits.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_demo2.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_display.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_gameinfo.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_ingame.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_loadconfig.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_local.h"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_menu.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_mfield.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_mods.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_network.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_options.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_playermodel.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_players.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_playersettings.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_preferences.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_qmenu.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_removebots.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_saveconfig.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_serverinfo.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_servers2.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_setup.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_sound.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_sparena.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_specifyserver.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_splevel.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_sppostgame.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_spskill.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_startserver.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_team.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_teamorders.c"),
+		path.join(IOQ3_CODE_PATH, "q3_ui/ui_video.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_math.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.c"),
-		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h")
+		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
+		path.join(IOQ3_CODE_PATH, "ui/ui_syscalls.asm")
 	}
-	
-	excludes
-	{
-		path.join(IOQ3_CODE_PATH, "q3_ui/ui_loadconfig.c"),
-		path.join(IOQ3_CODE_PATH, "q3_ui/ui_login.c"),
-		path.join(IOQ3_CODE_PATH, "q3_ui/ui_rankings.c"),
-		path.join(IOQ3_CODE_PATH, "q3_ui/ui_rankstatus.c"),
-		path.join(IOQ3_CODE_PATH, "q3_ui/ui_saveconfig.c"),
-		path.join(IOQ3_CODE_PATH, "q3_ui/ui_signup.c"),
-		path.join(IOQ3_CODE_PATH, "q3_ui/ui_specifyleague.c")
-	}
+
+	gameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "cgame", "-DCGAME", baseq3_cgame_files)
+	gameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "qagame", "-DQAGAME", baseq3_qagame_files)
+	gameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "ui", "-DUI", baseq3_ui_files)
 end
 
 if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-qvm"]) then
-setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame", "cgame/cg_syscalls.asm", "-DCGAME -DMISSIONPACK")
-	files
+	local missionpack_cgame_files =
 	{
-		path.join(IOQ3_CODE_PATH, "cgame/*.c"),
-		path.join(IOQ3_CODE_PATH, "cgame/*.h"),
-		path.join(IOQ3_CODE_PATH, "game/bg_*.c"),
-		path.join(IOQ3_CODE_PATH, "game/bg_*.h"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_main.c"), -- must be first for q3asm
+		path.join(IOQ3_CODE_PATH, "cgame/cg_consolecmds.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_draw.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_drawtools.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_effects.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_ents.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_event.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_info.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_local.h"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_localents.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_marks.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_newdraw.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_particles.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_players.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_playerstate.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_predict.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_public.h"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_scoreboard.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_servercmds.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_snapshot.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.asm"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_view.c"),
+		path.join(IOQ3_CODE_PATH, "cgame/cg_weapons.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_lib.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_lib.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_local.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_misc.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_pmove.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_public.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_slidemove.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_math.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/surfaceflags.h"),
-		path.join(IOQ3_CODE_PATH, "ui/ui_shared.*")
+		path.join(IOQ3_CODE_PATH, "ui/ui_shared.c"),
+		path.join(IOQ3_CODE_PATH, "ui/ui_shared.h")
 	}
 	
-	excludes
+	local missionpack_qagame_files =
 	{
-		path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.c")
-	}
-	
-setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame", "game/g_syscalls.asm", "-DQAGAME -DMISSIONPACK")
-	files
-	{
-		path.join(IOQ3_CODE_PATH, "game/*.c"),
-		path.join(IOQ3_CODE_PATH, "game/*.h"),
+		path.join(IOQ3_CODE_PATH, "game/g_main.c"), -- must be first for q3asm
+		path.join(IOQ3_CODE_PATH, "game/ai_chat.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_chat.h"),
+		path.join(IOQ3_CODE_PATH, "game/ai_cmd.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_cmd.h"),
+		path.join(IOQ3_CODE_PATH, "game/ai_dmnet.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_dmnet.h"),
+		path.join(IOQ3_CODE_PATH, "game/ai_dmq3.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_dmq3.h"),
+		path.join(IOQ3_CODE_PATH, "game/ai_main.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_main.h"),
+		path.join(IOQ3_CODE_PATH, "game/ai_team.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_team.h"),
+		path.join(IOQ3_CODE_PATH, "game/ai_vcmd.c"),
+		path.join(IOQ3_CODE_PATH, "game/ai_vcmd.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_lib.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_lib.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_local.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_misc.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_pmove.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_public.h"),
+		path.join(IOQ3_CODE_PATH, "game/bg_slidemove.c"),
+		path.join(IOQ3_CODE_PATH, "game/chars.h"),
+		path.join(IOQ3_CODE_PATH, "game/g_active.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_arenas.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_bot.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_client.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_cmds.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_combat.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_items.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_local.h"),
+		path.join(IOQ3_CODE_PATH, "game/g_mem.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_misc.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_missile.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_mover.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_public.h"),
+		path.join(IOQ3_CODE_PATH, "game/g_session.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_spawn.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_svcmds.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_syscalls.asm"),
+		path.join(IOQ3_CODE_PATH, "game/g_target.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_team.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_team.h"),
+		path.join(IOQ3_CODE_PATH, "game/g_trigger.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_utils.c"),
+		path.join(IOQ3_CODE_PATH, "game/g_weapon.c"),
+		path.join(IOQ3_CODE_PATH, "game/inv.h"),
+		path.join(IOQ3_CODE_PATH, "game/match.h"),
+		path.join(IOQ3_CODE_PATH, "game/syn.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_math.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/surfaceflags.h")
 	}
 	
-	excludes
+	local missionpack_ui_files =
 	{
-		path.join(IOQ3_CODE_PATH, "game/g_rankings.c"),
-		path.join(IOQ3_CODE_PATH, "game/g_syscalls.c")
-	}
-
-setupGameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "ui", "ui/ui_syscalls.asm", "-DUI -DMISSIONPACK")
-	files
-	{
-		path.join(IOQ3_CODE_PATH, "game/bg_lib.*"),
+		path.join(IOQ3_CODE_PATH, "ui/ui_main.c"), -- must be first for q3asm
+		path.join(IOQ3_CODE_PATH, "game/bg_lib.c"),
+		path.join(IOQ3_CODE_PATH, "game/bg_lib.h"),
 		path.join(IOQ3_CODE_PATH, "game/bg_misc.c"),
 		path.join(IOQ3_CODE_PATH, "game/bg_public.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_math.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
-		path.join(IOQ3_CODE_PATH, "ui/*.c"),
-		path.join(IOQ3_CODE_PATH, "ui/*.h")
+		path.join(IOQ3_CODE_PATH, "ui/ui_atoms.c"),
+		path.join(IOQ3_CODE_PATH, "ui/ui_gameinfo.c"),
+		path.join(IOQ3_CODE_PATH, "ui/ui_local.h"),
+		path.join(IOQ3_CODE_PATH, "ui/ui_players.c"),
+		path.join(IOQ3_CODE_PATH, "ui/ui_public.h"),
+		path.join(IOQ3_CODE_PATH, "ui/ui_shared.c"),
+		path.join(IOQ3_CODE_PATH, "ui/ui_shared.h"),
+		path.join(IOQ3_CODE_PATH, "ui/ui_syscalls.asm")
 	}
 	
-	excludes
-	{
-		path.join(IOQ3_CODE_PATH, "ui/ui_syscalls.c")
-	}
+	gameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame", "-DCGAME -DMISSIONPACK", missionpack_cgame_files)
+	gameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame", "-DQAGAME -DMISSIONPACK", missionpack_qagame_files)
+	gameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "ui", "-DUI -DMISSIONPACK", missionpack_ui_files)
 end
 
 group "lib"
