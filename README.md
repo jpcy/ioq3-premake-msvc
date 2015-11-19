@@ -2,13 +2,13 @@ A Premake script for generating Visual Studio projects for [ioquake3](https://gi
 
 ## Instructions
 1. Checkout [ioquake3](https://github.com/ioquake/ioq3) and this repository to the same parent directory.
-2. Hold shift and right click on the `ioq3-premake-msvc` directory and select "Open command window here". Run the command `premake5 vs2013`.
+2. Run `vs2013.bat` or `vs2015.bat`.
 3. Open `build\ioquake3.sln` in Visual Studio and compile.
 
 The compiled binaries are written to `build\bin_*`. You can either manually copy them to your Quake 3 directory and run the ioquake3 executable, or read the section [Debugging ioquake3](#debugging-ioquake3) below.
 
 ## Options
-Run the command `premake5 [options] vs2013`, where [options] are one or more of the following.
+As an alternative to `vs2013.bat` and `vs2015.bat`, invoke premake directly with `premake5 [options] [action]`, where [options] are one or more of the following, and [action] is either vs2013 or vs2015.
 
 Option                    | Description
 ------------------------- | -------------------------------------
@@ -25,7 +25,7 @@ Option                    | Description
 --rename-missionpack=NAME | Rename the missionpack project
 --standalone              | Remove the dependency on Q3A
 
-For example, run `premake5 --disable-baseq3 --disable-missionpack vs2013` if you don't want the game code projects.
+For example, run `premake5 --disable-baseq3 --disable-missionpack vs2015` if you don't want the game code projects.
 
 ## Debugging ioquake3
 ioquake3 requires the baseq3 directory containing pak*.pk3 files to be in one of its search paths to run. The search paths are:
