@@ -89,6 +89,27 @@ end
 
 local IOQ3_CODE_PATH = path.join(IOQ3_PATH, "code")
 
+local BGFX_PATH = nil
+local BX_PATH = nil
+
+if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
+	dofile(path.join(IOQ3_RENDERER_BGFX, "renderer_bgfx.lua"))
+	
+	BGFX_PATH = path.join(path.getabsolute(".."), "bgfx")
+
+	if not os.isdir(BGFX_PATH) then
+		print("bgfx not found at " .. BGFX_PATH)
+		os.exit()
+	end
+
+	BX_PATH = path.join(path.getabsolute(".."), "bx")
+
+	if not os.isdir(BX_PATH) then
+		print("bx not found at " .. BX_PATH)
+		os.exit()
+	end
+end	
+
 if os.get() == "windows" then
 	os.mkdir("build")
 	os.mkdir("build/bin_x86")
@@ -543,7 +564,7 @@ project "renderer_opengl2"
 end
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
-	dofile(path.join(IOQ3_RENDERER_BGFX, "renderer_bgfx.lua"))
+	createRendererProject(BGFX_PATH, BX_PATH, IOQ3_PATH, IOQ3_RENDERER_BGFX, "SDL2/x86/SDL2", "SDL2/x64/SDL2")
 end
 
 function setupGameDllProject(mod, name)
@@ -1019,8 +1040,8 @@ project "zlib"
 end
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
-	dofile(path.join(IOQ3_RENDERER_BGFX, "bgfx.lua"))
-	dofile(path.join(IOQ3_RENDERER_BGFX, "shaderc.lua"))
+	createBgfxProject(BGFX_PATH, BX_PATH)
+	createShadercProject(BGFX_PATH, BX_PATH, IOQ3_RENDERER_BGFX)
 end
 
 -- Don't build tools used to build QVMs if they aren't used.
