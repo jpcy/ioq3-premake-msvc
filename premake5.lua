@@ -1040,7 +1040,6 @@ project "zlib"
 end
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
-	createBgfxProject(BGFX_PATH, BX_PATH)
 	createShadercProject(BGFX_PATH, BX_PATH, IOQ3_RENDERER_BGFX)
 end
 
