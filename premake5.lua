@@ -114,37 +114,33 @@ if os.get() == "windows" then
 	os.mkdir("build")
 	os.mkdir("build/bin_x86")
 	os.mkdir("build/bin_x64")
-	os.mkdir("build/bin_debug_x86")
-	os.mkdir("build/bin_debug_x64")
+	os.mkdir("build/bin_x86_debug")
+	os.mkdir("build/bin_x64_debug")
 	
 	-- Copy the SDL2 dlls to the build directories.
 	os.copyfile("SDL2/x86/SDL2.dll", "build/bin_x86/SDL2.dll")
 	os.copyfile("SDL2/x64/SDL2.dll", "build/bin_x64/SDL2.dll")
-	os.copyfile("SDL2/x86/SDL2.dll", "build/bin_debug_x86/SDL2.dll")
-	os.copyfile("SDL2/x64/SDL2.dll", "build/bin_debug_x64/SDL2.dll")
+	os.copyfile("SDL2/x86/SDL2.dll", "build/bin_x86_debug/SDL2.dll")
+	os.copyfile("SDL2/x64/SDL2.dll", "build/bin_x64_debug/SDL2.dll")
 	
 	-- The icon path is hardcoded in sys\win_resource.rc. Copy it to where it needs to be.
 	os.copyfile(path.join(IOQ3_PATH, "misc/quake3.ico"), "quake3.ico")
-	
-	if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
-		os.copyfile(path.join(IOQ3_RENDERER_BGFX, "D3DCompiler_47.dll"), "build/bin_x86/D3DCompiler_47.dll")
-		os.copyfile(path.join(IOQ3_RENDERER_BGFX, "D3DCompiler_47.dll"), "build/bin_x64/D3DCompiler_47.dll")
-		os.copyfile(path.join(IOQ3_RENDERER_BGFX, "D3DCompiler_47.dll"), "build/bin_debug_x86/D3DCompiler_47.dll")
-		os.copyfile(path.join(IOQ3_RENDERER_BGFX, "D3DCompiler_47.dll"), "build/bin_debug_x64/D3DCompiler_47.dll")
-	end
 end
 
 solution "ioquake3"
 	language "C"
 	location "build"
 	startproject "ioquake3"
-	platforms { "native", "x32", "x64" }
-	configurations { "Debug", "Release" }
+	platforms { "x86", "x64" }
+	configurations { "Release", "Debug" }
 	defines { "_CRT_SECURE_NO_DEPRECATE" }
 	
-	configuration "x64"
-		defines { "_WIN64", "__WIN64__" }
-			
+	configuration "platforms:x86"
+		architecture "x86"
+		
+	configuration "platforms:x64"
+		architecture "x64"
+	
 	configuration "Debug"
 		optimize "Debug"
 		defines { "_DEBUG" }
@@ -154,17 +150,20 @@ solution "ioquake3"
 		optimize "Full"
 		defines "NDEBUG"
 		
-	configuration { "Debug", "not x64" }
-		targetdir "build/bin_debug_x86"
+	configuration { "Debug", "x86" }
+		targetdir "build/bin_x86_debug"
 		
-	configuration { "Release", "not x64" }
+	configuration { "Release", "x86" }
 		targetdir "build/bin_x86"
 		
 	configuration { "Debug", "x64" }
-		targetdir "build/bin_debug_x64"
+		targetdir "build/bin_x64_debug"
 		
 	configuration { "Release", "x64" }
 		targetdir "build/bin_x64"
+		
+	configuration "x64"
+		defines { "_WIN64", "__WIN64__" }
 	
 group "engine"
 
@@ -174,7 +173,7 @@ project "ioquake3"
 	
 	configuration "x64"
 		targetname "ioquake3.x86_64"
-	configuration "not x64"
+	configuration "x86"
 		targetname "ioquake3.x86"
 	configuration {}
 	
@@ -258,10 +257,10 @@ project "ioquake3"
 		"zlib"
 	}
 	
-	configuration { "not x64", "vs2015" }
+	configuration { "x86", "vs2015" }
 		links { "SDL2/x86/SDL2", "SDL2_vs2015/x86/SDL2main" }
 	
-	configuration { "not x64", "not vs2015" }
+	configuration { "x86", "not vs2015" }
 		links { "SDL2/x86/SDL2", "SDL2/x86/SDL2main" }
 		
 	configuration "x64"
@@ -272,7 +271,7 @@ project "ioquake3"
 	-- for MSVC2012
 	linkoptions "/SAFESEH:NO"
 	
-	configuration { "not x64", "**.asm" }
+	configuration { "x86", "**.asm" }
 		buildmessage "Assembling..."
 		buildcommands('ml /c /Zi /Fo"%{cfg.objdir}/%{file.basename}.asm.obj" "%{file.relpath}"')
 		buildoutputs '%{cfg.objdir}/%{file.basename}.asm.obj'
@@ -289,7 +288,7 @@ project "ioq3ded"
 	
 	configuration "x64"
 		targetname "ioq3ded.x86_64"
-	configuration "not x64"
+	configuration "x86"
 		targetname "ioq3ded.x86"
 	configuration {}
 	
@@ -355,7 +354,7 @@ project "ioq3ded"
 	-- for MSVC2012
 	linkoptions "/SAFESEH:NO"
 	
-	configuration { "not x64", "**.asm" }
+	configuration { "x86", "**.asm" }
 		buildmessage "Assembling..."
 		buildcommands('ml /c /Zi /Fo"%{cfg.objdir}/%{file.basename}.asm.obj" "%{file.relpath}"')
 		buildoutputs '%{cfg.objdir}/%{file.basename}.asm.obj'
@@ -374,7 +373,7 @@ project "renderer_opengl1"
 	
 	configuration "x64"
 		targetname "renderer_opengl1_x86_64"
-	configuration "not x64"
+	configuration "x86"
 		targetname "renderer_opengl1_x86"
 	configuration {}
 
@@ -436,7 +435,7 @@ project "renderer_opengl1"
 		"zlib"
 	}
 	
-	configuration "not x64"
+	configuration "x86"
 		links { "SDL2/x86/SDL2" }
 		
 	configuration "x64"
@@ -450,7 +449,7 @@ project "renderer_opengl2"
 	
 	configuration "x64"
 		targetname "renderer_opengl2_x86_64"
-	configuration "not x64"
+	configuration "x86"
 		targetname "renderer_opengl2_x86"
 	configuration {}
 
@@ -548,7 +547,7 @@ project "renderer_opengl2"
 		"zlib"
 	}
 	
-	configuration "not x64"
+	configuration "x86"
 		links { "SDL2/x86/SDL2" }
 		
 	configuration "x64"
@@ -575,14 +574,14 @@ function setupGameDllProject(mod, name)
 		defines "STANDALONE"
 	end
 	
-	configuration { "Debug", "not x64" }
-		targetdir("build/bin_debug_x86/" .. mod)
+	configuration { "Debug", "x86" }
+		targetdir("build/bin_x86_debug/" .. mod)
 		targetname(name .. "x86")
-	configuration { "Release", "not x64" }
+	configuration { "Release", "x86" }
 		targetdir("build/bin_x86/" .. mod)
 		targetname(name .. "x86")
 	configuration { "Debug", "x64" }
-		targetdir("build/bin_debug_x64/" .. mod)
+		targetdir("build/bin_x64_debug/" .. mod)
 		targetname(name .. "x86_64")
 	configuration { "Release", "x64" }
 		targetdir("build/bin_x64/" .. mod)
@@ -1037,10 +1036,6 @@ project "libspeex"
 project "zlib"
 	kind "StaticLib"
 	files { path.join(IOQ3_CODE_PATH, "zlib/*.c"), path.join(IOQ3_CODE_PATH, "zlib/*.h") }
-end
-
-if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
-	createShadercProject(BGFX_PATH, BX_PATH, IOQ3_RENDERER_BGFX)
 end
 
 -- Don't build tools used to build QVMs if they aren't used.
