@@ -88,6 +88,9 @@ if not os.isdir(IOQ3_PATH) then
 end
 
 local IOQ3_CODE_PATH = path.join(IOQ3_PATH, "code")
+local OGG_PATH = path.join(IOQ3_CODE_PATH, "libogg-1.3.1")
+local OPUS_PATH = path.join(IOQ3_CODE_PATH, "opus-1.1")
+local OPUSFILE_PATH = path.join(IOQ3_CODE_PATH, "opusfile-0.5")
 
 local BGFX_PATH = nil
 local BX_PATH = nil
@@ -183,6 +186,7 @@ project "ioquake3"
 		"WIN32",
 		"_WINSOCK_DEPRECATED_NO_WARNINGS",
 		"BOTLIB",
+		"USE_CODEC_OPUS",
 		"USE_CURL",
 		"USE_CURL_DLOPEN",
 		"USE_OPENAL",
@@ -233,12 +237,14 @@ project "ioquake3"
 	
 	includedirs
 	{
-		path.join(IOQ3_CODE_PATH, "SDL2/include"),
-		path.join(IOQ3_CODE_PATH, "libcurl"),
 		path.join(IOQ3_CODE_PATH, "AL"),
-		path.join(IOQ3_CODE_PATH, "libspeex/include"),
-		path.join(IOQ3_CODE_PATH, "zlib"),
 		path.join(IOQ3_CODE_PATH, "jpeg-8c"),
+		path.join(IOQ3_CODE_PATH, "libcurl"),
+		path.join(IOQ3_CODE_PATH, "SDL2/include"),
+		path.join(IOQ3_CODE_PATH, "zlib"),
+		path.join(OGG_PATH, "include"),
+		path.join(OPUS_PATH, "include"),
+		path.join(OPUSFILE_PATH, "include")
 	}
 	
 	links
@@ -253,7 +259,7 @@ project "ioquake3"
 		"gdi32",
 
 		-- Other projects
-		"libspeex",
+		"opus",
 		"zlib"
 	}
 	
@@ -413,12 +419,12 @@ project "renderer_opengl1"
 	
 	includedirs
 	{
-		path.join(IOQ3_CODE_PATH, "SDL2/include"),
-		path.join(IOQ3_CODE_PATH, "libcurl"),
 		path.join(IOQ3_CODE_PATH, "AL"),
-		path.join(IOQ3_CODE_PATH, "libspeex/include"),
-		path.join(IOQ3_CODE_PATH, "zlib"),
-		path.join(IOQ3_CODE_PATH, "jpeg-8c")
+		path.join(IOQ3_CODE_PATH, "jpeg-8c"),
+		path.join(IOQ3_CODE_PATH, "libcurl"),
+		path.join(IOQ3_CODE_PATH, "SDL2/include"),
+		path.join(IOQ3_CODE_PATH, "zlib")
+		
 	}
 	
 	links
@@ -528,7 +534,6 @@ project "renderer_opengl2"
 		path.join(IOQ3_CODE_PATH, "SDL2/include"),
 		path.join(IOQ3_CODE_PATH, "libcurl"),
 		path.join(IOQ3_CODE_PATH, "AL"),
-		path.join(IOQ3_CODE_PATH, "libspeex/include"),
 		path.join(IOQ3_CODE_PATH, "zlib"),
 		path.join(IOQ3_CODE_PATH, "jpeg-8c")
 	}
@@ -1025,14 +1030,29 @@ group "lib"
 
 -- If the client and server projects are disabled, disable the libs they use exclusively too.
 if not (_OPTIONS["disable-client"] and _OPTIONS["disable-server"]) then
-project "libspeex"
+project "opus"
 	kind "StaticLib"
-	defines { "HAVE_CONFIG_H", "WIN32" } -- alloca is undefined if WIN32 is omitted. x64 needs it too.
-	files { path.join(IOQ3_CODE_PATH, "libspeex/*.c"), path.join(IOQ3_CODE_PATH, "libspeex/*.h"), path.join(IOQ3_CODE_PATH, "libspeex/include/speex/*.h") }
-	excludes { path.join(IOQ3_CODE_PATH, "libspeex/test*.c") }
-	includedirs { path.join(IOQ3_CODE_PATH, "libspeex/include") }
-	buildoptions { "/wd\"4018\"", "/wd\"4047\"", "/wd\"4244\"", "/wd\"4267\"", "/wd\"4305\"" } -- Silence some warnings
-		
+	defines { "OPUS_BUILD", "HAVE_LRINTF", "FLOATING_POINT", "USE_ALLOCA" }
+	files
+	{
+		path.join(OGG_PATH, "src/*.c"),
+		path.join(OPUS_PATH, "celt/*.c"),
+		path.join(OPUS_PATH, "silk/*.c"),
+		path.join(OPUS_PATH, "silk/float/*.c"),
+		path.join(OPUS_PATH, "src/*.c"),
+		path.join(OPUSFILE_PATH, "src/*.c")
+	}
+	
+	includedirs
+	{
+		path.join(OGG_PATH, "include"),
+		path.join(OPUS_PATH, "include"),
+		path.join(OPUS_PATH, "celt"),
+		path.join(OPUS_PATH, "silk"),
+		path.join(OPUS_PATH, "silk/float"),
+		path.join(OPUSFILE_PATH, "include")
+	}
+	
 project "zlib"
 	kind "StaticLib"
 	files { path.join(IOQ3_CODE_PATH, "zlib/*.c"), path.join(IOQ3_CODE_PATH, "zlib/*.h") }
