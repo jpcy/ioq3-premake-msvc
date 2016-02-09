@@ -269,7 +269,10 @@ project "ioquake3"
 	configuration { "x86", "not vs2015" }
 		links { "SDL2/x86/SDL2", "SDL2/x86/SDL2main" }
 		
-	configuration "x64"
+	configuration { "x64", "vs2015" }
+		links { "SDL2/x64/SDL2", "SDL2_vs2015/x64/SDL2main" }
+		
+	configuration { "x64", "not vs2015" }
 		links { "SDL2/x64/SDL2", "SDL2/x64/SDL2main" }
 		
 	configuration {}
