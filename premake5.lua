@@ -135,7 +135,7 @@ solution "ioquake3"
 	location "build"
 	startproject "ioquake3"
 	platforms { "x86", "x64" }
-	configurations { "Release", "Debug" }
+	configurations { "Release", "Debug", "Profile" }
 	defines { "_CRT_SECURE_NO_DEPRECATE" }
 	
 	configuration "platforms:x86"
@@ -148,21 +148,24 @@ solution "ioquake3"
 		optimize "Debug"
 		defines { "_DEBUG" }
 		flags "Symbols"
+		
+	configuration "Profile"
+		defines "USE_PROFILER"
 				
-	configuration "Release"
+	configuration "Release or Profile"
 		optimize "Full"
 		defines "NDEBUG"
 		
 	configuration { "Debug", "x86" }
 		targetdir "build/bin_x86_debug"
 		
-	configuration { "Release", "x86" }
+	configuration { "Release or Profile", "x86" }
 		targetdir "build/bin_x86"
 		
 	configuration { "Debug", "x64" }
 		targetdir "build/bin_x64_debug"
 		
-	configuration { "Release", "x64" }
+	configuration { "Release or Profile", "x64" }
 		targetdir "build/bin_x64"
 		
 	configuration "x64"
@@ -585,13 +588,13 @@ function setupGameDllProject(mod, name)
 	configuration { "Debug", "x86" }
 		targetdir("build/bin_x86_debug/" .. mod)
 		targetname(name .. "x86")
-	configuration { "Release", "x86" }
+	configuration { "Release or Profile", "x86" }
 		targetdir("build/bin_x86/" .. mod)
 		targetname(name .. "x86")
 	configuration { "Debug", "x64" }
 		targetdir("build/bin_x64_debug/" .. mod)
 		targetname(name .. "x86_64")
-	configuration { "Release", "x64" }
+	configuration { "Release or Profile", "x64" }
 		targetdir("build/bin_x64/" .. mod)
 		targetname(name .. "x86_64")
 	configuration {}
