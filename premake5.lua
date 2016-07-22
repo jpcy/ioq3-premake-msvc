@@ -574,7 +574,14 @@ project "renderer_opengl2"
 end
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
-	createRendererProject("ioq3", BGFX_PATH, BX_PATH, IOQ3_RENDERER_BGFX, path.join(IOQ3_PATH, "code/SDL2/include"), "SDL2/x86/SDL2", "SDL2/x64/SDL2")
+	rendererProject("ioq3", BGFX_PATH, BX_PATH, IOQ3_RENDERER_BGFX)
+	if os.is("windows") then
+		includedirs(path.join(IOQ3_PATH, "code/SDL2/include"))
+		configuration "x86"
+			links("SDL2/x86/SDL2")
+		configuration "x86_64"
+			links("SDL2/x64/SDL2")
+	end
 end
 
 function setupGameDllProject(mod, name)
