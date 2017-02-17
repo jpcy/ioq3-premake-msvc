@@ -232,6 +232,7 @@ project "ioquake3"
 	excludes
 	{
 		path.join(IOQ3_CODE_PATH, "client/libmumblelink.*"),
+		path.join(IOQ3_CODE_PATH, "qcommon/vm_armv7l.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/vm_none.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/vm_powerpc*.*"),
 		path.join(IOQ3_CODE_PATH, "qcommon/vm_sparc.*"),
