@@ -92,25 +92,8 @@ local OGG_PATH = path.join(IOQ3_CODE_PATH, "libogg-1.3.1")
 local OPUS_PATH = path.join(IOQ3_CODE_PATH, "opus-1.1")
 local OPUSFILE_PATH = path.join(IOQ3_CODE_PATH, "opusfile-0.5")
 
-local BGFX_PATH = nil
-local BX_PATH = nil
-
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
 	dofile(path.join(IOQ3_RENDERER_BGFX, "renderer_bgfx.lua"))
-	
-	BGFX_PATH = path.join(path.getabsolute(".."), "bgfx")
-
-	if not os.isdir(BGFX_PATH) then
-		print("bgfx not found at " .. BGFX_PATH)
-		os.exit()
-	end
-
-	BX_PATH = path.join(path.getabsolute(".."), "bx")
-
-	if not os.isdir(BX_PATH) then
-		print("bx not found at " .. BX_PATH)
-		os.exit()
-	end
 end	
 
 if os.get() == "windows" then
@@ -575,7 +558,7 @@ project "renderer_opengl2"
 end
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
-	rendererProject("ioq3", BGFX_PATH, BX_PATH, IOQ3_RENDERER_BGFX)
+	rendererProject("ioq3", IOQ3_RENDERER_BGFX)
 	if os.is("windows") then
 		includedirs(path.join(IOQ3_PATH, "code/SDL2/include"))
 		configuration "x86"
