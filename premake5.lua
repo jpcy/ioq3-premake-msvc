@@ -88,9 +88,9 @@ if not os.isdir(IOQ3_PATH) then
 end
 
 local IOQ3_CODE_PATH = path.join(IOQ3_PATH, "code")
-local OGG_PATH = path.join(IOQ3_CODE_PATH, "libogg-1.3.1")
-local OPUS_PATH = path.join(IOQ3_CODE_PATH, "opus-1.1")
-local OPUSFILE_PATH = path.join(IOQ3_CODE_PATH, "opusfile-0.5")
+local OGG_PATH = path.join(IOQ3_CODE_PATH, "libogg-1.3.2")
+local OPUS_PATH = path.join(IOQ3_CODE_PATH, "opus-1.1.4")
+local OPUSFILE_PATH = path.join(IOQ3_CODE_PATH, "opusfile-0.8")
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
 	dofile(path.join(IOQ3_RENDERER_BGFX, "renderer_bgfx.lua"))
@@ -162,8 +162,10 @@ project "ioquake3"
 	
 	configuration "x64"
 		targetname "ioquake3.x86_64"
+		defines "__x86_64__"
 	configuration "x86"
 		targetname "ioquake3.x86"
+		defines "__i386__"
 	configuration {}
 	
 	defines
@@ -202,6 +204,7 @@ project "ioquake3"
 		path.join(IOQ3_CODE_PATH, "server/*.h"),
 		path.join(IOQ3_CODE_PATH, "sys/con_log.c"),
 		path.join(IOQ3_CODE_PATH, "sys/con_passive.c"),
+		path.join(IOQ3_CODE_PATH, "sys/sys_autoupdater.c"),
 		path.join(IOQ3_CODE_PATH, "sys/sys_main.c"),
 		path.join(IOQ3_CODE_PATH, "sys/sys_win32.c"),
 		path.join(IOQ3_CODE_PATH, "sys/*.h"),
@@ -316,6 +319,7 @@ project "ioq3ded"
 		path.join(IOQ3_CODE_PATH, "server/*.h"),
 		path.join(IOQ3_CODE_PATH, "sys/con_log.c"),
 		path.join(IOQ3_CODE_PATH, "sys/con_win32.c"),
+		path.join(IOQ3_CODE_PATH, "sys/sys_autoupdater.c"),
 		path.join(IOQ3_CODE_PATH, "sys/sys_main.c"),
 		path.join(IOQ3_CODE_PATH, "sys/sys_win32.c"),
 		path.join(IOQ3_CODE_PATH, "sys/*.h"),
@@ -328,6 +332,7 @@ project "ioq3ded"
 	
 	excludes
 	{
+		path.join(IOQ3_CODE_PATH, "qcommon/vm_armv7l.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/vm_none.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/vm_powerpc*.*"),
 		path.join(IOQ3_CODE_PATH, "qcommon/vm_sparc.*"),
