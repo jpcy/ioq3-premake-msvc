@@ -130,7 +130,7 @@ solution "ioquake3"
 	configuration "Debug"
 		optimize "Debug"
 		defines { "_DEBUG" }
-		flags "Symbols"
+		symbols "On"
 		
 	configuration "Profile"
 		defines "USE_PROFILER"
