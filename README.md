@@ -21,6 +21,7 @@ Option                    | Description
 --disable-renderer-bgfx   | Disable the bgfx renderer project
 --disable-game-dll        | Disable the game DLL projects
 --disable-game-qvm        | Disable the game QVM projects
+--disable-ogg             | Disable Ogg Opus and Vorbis support
 --rename-baseq3=NAME      | Rename the baseq3 project
 --rename-missionpack=NAME | Rename the missionpack project
 --standalone              | Remove the dependency on Q3A

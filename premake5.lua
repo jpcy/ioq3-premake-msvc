@@ -58,6 +58,12 @@ newoption
 
 newoption
 {
+	trigger = "disable-ogg",
+	description = "Disable Ogg Opus and Vorbis support"
+}
+
+newoption
+{
 	trigger = "rename-baseq3",
 	description = "Rename the baseq3 project",
 	value = "NAME"
@@ -91,6 +97,7 @@ local IOQ3_CODE_PATH = path.join(IOQ3_PATH, "code")
 local OGG_PATH = path.join(IOQ3_CODE_PATH, "libogg-1.3.2")
 local OPUS_PATH = path.join(IOQ3_CODE_PATH, "opus-1.1.4")
 local OPUSFILE_PATH = path.join(IOQ3_CODE_PATH, "opusfile-0.8")
+local VORBIS_PATH = path.join(IOQ3_CODE_PATH, "libvorbis-1.3.5")
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
 	dofile(path.join(IOQ3_RENDERER_BGFX, "renderer_bgfx.lua"))
@@ -174,12 +181,10 @@ project "ioquake3"
 		"WIN32",
 		"_WINSOCK_DEPRECATED_NO_WARNINGS",
 		"BOTLIB",
-		"USE_CODEC_OPUS",
 		"USE_CURL",
 		"USE_CURL_DLOPEN",
 		"USE_OPENAL",
 		"USE_OPENAL_DLOPEN",
-		"USE_VOIP",
 		"USE_RENDERER_DLOPEN",
 		"USE_LOCAL_HEADERS"
 	}
@@ -231,10 +236,7 @@ project "ioquake3"
 		path.join(IOQ3_CODE_PATH, "jpeg-8c"),
 		path.join(IOQ3_CODE_PATH, "libcurl"),
 		path.join(IOQ3_CODE_PATH, "SDL2/include"),
-		path.join(IOQ3_CODE_PATH, "zlib"),
-		path.join(OGG_PATH, "include"),
-		path.join(OPUS_PATH, "include"),
-		path.join(OPUSFILE_PATH, "include")
+		path.join(IOQ3_CODE_PATH, "zlib")
 	}
 	
 	links
@@ -249,9 +251,27 @@ project "ioquake3"
 		"gdi32",
 
 		-- Other projects
-		"opus",
 		"zlib"
 	}
+	
+	if not _OPTIONS["disable-ogg"] then
+		defines
+		{
+			"USE_CODEC_OPUS",
+			"USE_CODEC_VORBIS",
+			"USE_VOIP"
+		}
+		
+		includedirs
+		{
+			path.join(OGG_PATH, "include"),
+			path.join(OPUS_PATH, "include"),
+			path.join(OPUSFILE_PATH, "include"),
+			path.join(VORBIS_PATH, "include")
+		}
+		
+		links { "ogg", "opus", "vorbis" }
+	end
 	
 	configuration { "x86", "vs2015" }
 		links { "SDL2/x86/SDL2", "SDL2_vs2015/x86/SDL2main" }
@@ -1030,14 +1050,24 @@ end
 
 group "lib"
 
--- If the client and server projects are disabled, disable the libs they use exclusively too.
-if not (_OPTIONS["disable-client"] and _OPTIONS["disable-server"]) then
+if not (_OPTIONS["disable-client"] or _OPTIONS["disable-ogg"]) then
+project "ogg"
+	kind "StaticLib"
+	files
+	{
+		path.join(OGG_PATH, "src/*.c")
+	}
+	
+	includedirs
+	{
+		path.join(OGG_PATH, "include")
+	}
+
 project "opus"
 	kind "StaticLib"
 	defines { "OPUS_BUILD", "HAVE_LRINTF", "FLOATING_POINT", "USE_ALLOCA" }
 	files
 	{
-		path.join(OGG_PATH, "src/*.c"),
 		path.join(OPUS_PATH, "celt/*.c"),
 		path.join(OPUS_PATH, "silk/*.c"),
 		path.join(OPUS_PATH, "silk/float/*.c"),
@@ -1054,7 +1084,31 @@ project "opus"
 		path.join(OPUS_PATH, "silk/float"),
 		path.join(OPUSFILE_PATH, "include")
 	}
+	buildoptions
+	{
+		"/wd\"4244\"" -- "conversion from 'x' to 'y', possible loss of data"
+	}
 	
+project "vorbis"
+	kind "StaticLib"
+	files
+	{
+		path.join(VORBIS_PATH, "lib/*.c")
+	}
+	includedirs
+	{
+		path.join(OGG_PATH, "include"),
+		path.join(VORBIS_PATH, "include"),
+		path.join(VORBIS_PATH, "lib")
+	}
+	buildoptions
+	{
+		"/wd\"4305\"", -- "truncation from 'x' to 'y'"
+		"/wd\"4244\"" -- "conversion from 'x' to 'y', possible loss of data"
+	}
+end
+
+if not (_OPTIONS["disable-client"] and _OPTIONS["disable-server"]) then
 project "zlib"
 	kind "StaticLib"
 	files { path.join(IOQ3_CODE_PATH, "zlib/*.c"), path.join(IOQ3_CODE_PATH, "zlib/*.h") }
