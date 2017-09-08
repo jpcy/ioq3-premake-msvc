@@ -42,6 +42,12 @@ if os.isdir(IOQ3_RENDERER_BGFX) then
 		trigger = "disable-renderer-bgfx",
 		description = "Disable the bgfx renderer project"
 	}
+	
+	newoption
+	{
+		trigger = "enable-light-baker",
+		description = "Enable the light baker in ioq3-renderer-bgfx"
+	}
 end
 
 newoption
@@ -604,7 +610,7 @@ project "renderer_opengl2"
 end
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
-	rendererProject("ioq3", IOQ3_RENDERER_BGFX)
+	rendererProject("ioq3", _OPTIONS["enable-light-baker"], IOQ3_RENDERER_BGFX)
 	if os.is("windows") then
 		includedirs(path.join(IOQ3_PATH, "code/SDL2/include"))
 		configuration "x86"
