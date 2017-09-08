@@ -115,9 +115,6 @@ if os.get() == "windows" then
 	os.copyfile("SDL2/x64/SDL2.dll", "build/bin_x64/SDL2.dll")
 	os.copyfile("SDL2/x86/SDL2.dll", "build/bin_x86_debug/SDL2.dll")
 	os.copyfile("SDL2/x64/SDL2.dll", "build/bin_x64_debug/SDL2.dll")
-	
-	-- The icon path is hardcoded in sys\win_resource.rc. Copy it to where it needs to be.
-	os.copyfile(path.join(IOQ3_PATH, "misc/quake3.ico"), "quake3.ico")
 end
 
 solution "ioquake3"
@@ -213,7 +210,19 @@ project "ioquake3"
 		path.join(IOQ3_CODE_PATH, "sys/sys_main.c"),
 		path.join(IOQ3_CODE_PATH, "sys/sys_win32.c"),
 		path.join(IOQ3_CODE_PATH, "sys/*.h"),
-		path.join(IOQ3_CODE_PATH, "sys/*.rc")
+		"res/win_manifest.manifest",
+		"res/win_resource.rc",
+		"res/win_resource.h"
+	}
+	
+	excludes
+	{
+		path.join(IOQ3_CODE_PATH, "sys/win_resource.h")
+	}
+	
+	vpaths
+	{
+		["*"] = IOQ3_CODE_PATH
 	}
 	
 	configuration "x64"
@@ -343,7 +352,19 @@ project "ioq3ded"
 		path.join(IOQ3_CODE_PATH, "sys/sys_main.c"),
 		path.join(IOQ3_CODE_PATH, "sys/sys_win32.c"),
 		path.join(IOQ3_CODE_PATH, "sys/*.h"),
-		path.join(IOQ3_CODE_PATH, "sys/*.rc")
+		"res/win_manifest.manifest",
+		"res/win_resource.rc",
+		"res/win_resource.h"
+	}
+	
+	excludes
+	{
+		path.join(IOQ3_CODE_PATH, "sys/win_resource.h")
+	}
+	
+	vpaths
+	{
+		["*"] = IOQ3_CODE_PATH
 	}
 	
 	configuration "x64"
