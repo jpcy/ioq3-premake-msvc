@@ -103,25 +103,12 @@ local IOQ3_CODE_PATH = path.join(IOQ3_PATH, "code")
 local OGG_PATH = path.join(IOQ3_CODE_PATH, "libogg-1.3.2")
 local OPUS_PATH = path.join(IOQ3_CODE_PATH, "opus-1.1.4")
 local OPUSFILE_PATH = path.join(IOQ3_CODE_PATH, "opusfile-0.8")
+local SDL_PATH = path.join(path.getabsolute("."), "SDL2")
 local VORBIS_PATH = path.join(IOQ3_CODE_PATH, "libvorbis-1.3.5")
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
 	dofile(path.join(IOQ3_RENDERER_BGFX, "renderer_bgfx.lua"))
 end	
-
-if os.get() == "windows" then
-	os.mkdir("build")
-	os.mkdir("build/bin_x86")
-	os.mkdir("build/bin_x64")
-	os.mkdir("build/bin_x86_debug")
-	os.mkdir("build/bin_x64_debug")
-	
-	-- Copy the SDL2 dlls to the build directories.
-	os.copyfile("SDL2/x86/SDL2.dll", "build/bin_x86/SDL2.dll")
-	os.copyfile("SDL2/x64/SDL2.dll", "build/bin_x64/SDL2.dll")
-	os.copyfile("SDL2/x86/SDL2.dll", "build/bin_x86_debug/SDL2.dll")
-	os.copyfile("SDL2/x64/SDL2.dll", "build/bin_x64_debug/SDL2.dll")
-end
 
 solution "ioquake3"
 	language "C"
@@ -140,7 +127,7 @@ solution "ioquake3"
 	configuration "Debug"
 		optimize "Debug"
 		defines { "_DEBUG" }
-		flags "Symbols"
+		symbols "On"
 		
 	configuration "Profile"
 		defines "USE_PROFILER"
@@ -169,6 +156,7 @@ group "engine"
 if not _OPTIONS["disable-client"] then
 project "ioquake3"
 	kind "WindowedApp"
+	characterset "MBCS"
 	
 	configuration "x64"
 		targetname "ioquake3.x86_64"
@@ -266,6 +254,8 @@ project "ioquake3"
 		"gdi32",
 
 		-- Other projects
+		"SDL2",
+		"SDL2main",
 		"zlib"
 	}
 	
@@ -288,20 +278,6 @@ project "ioquake3"
 		links { "ogg", "opus", "vorbis" }
 	end
 	
-	configuration { "x86", "vs2015" }
-		links { "SDL2/x86/SDL2", "SDL2_vs2015/x86/SDL2main" }
-	
-	configuration { "x86", "not vs2015" }
-		links { "SDL2/x86/SDL2", "SDL2/x86/SDL2main" }
-		
-	configuration { "x64", "vs2015" }
-		links { "SDL2/x64/SDL2", "SDL2_vs2015/x64/SDL2main" }
-		
-	configuration { "x64", "not vs2015" }
-		links { "SDL2/x64/SDL2", "SDL2/x64/SDL2main" }
-		
-	configuration {}
-	
 	-- for MSVC2012
 	linkoptions "/SAFESEH:NO"
 	
@@ -319,6 +295,7 @@ end
 if not _OPTIONS["disable-server"] then
 project "ioq3ded"
 	kind "ConsoleApp"
+	characterset "MBCS"
 	
 	configuration "x64"
 		targetname "ioq3ded.x86_64"
@@ -418,6 +395,7 @@ group "renderer"
 if not _OPTIONS["disable-renderer-gl1"] then
 project "renderer_opengl1"
 	kind "SharedLib"
+	characterset "MBCS"
 	
 	configuration "x64"
 		targetname "renderer_opengl1_x86_64"
@@ -480,20 +458,18 @@ project "renderer_opengl1"
 		"psapi",
 		
 		-- Other projects
+		"SDL2",
 		"zlib"
 	}
 	
-	configuration "x86"
-		links { "SDL2/x86/SDL2" }
-		
 	configuration "x64"
 		buildoptions { "/wd\"4267\""} -- Silence size_t type conversion warnings
-		links { "SDL2/x64/SDL2" }
 end
 
 if not _OPTIONS["disable-renderer-gl2"] then
 project "renderer_opengl2"
 	kind "SharedLib"
+	characterset "MBCS"
 	
 	configuration "x64"
 		targetname "renderer_opengl2_x86_64"
@@ -591,15 +567,12 @@ project "renderer_opengl2"
 		"psapi",
 		
 		-- Other projects
+		"SDL2",
 		"zlib"
 	}
 	
-	configuration "x86"
-		links { "SDL2/x86/SDL2" }
-		
 	configuration "x64"
 		buildoptions { "/wd\"4267\""} -- Silence size_t type conversion warnings
-		links { "SDL2/x64/SDL2" }
 		
 	configuration {}
 	
@@ -611,13 +584,8 @@ end
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
 	rendererProject("ioq3", _OPTIONS["enable-light-baker"], IOQ3_RENDERER_BGFX)
-	if os.is("windows") then
-		includedirs(path.join(IOQ3_PATH, "code/SDL2/include"))
-		configuration "x86"
-			links("SDL2/x86/SDL2")
-		configuration "x86_64"
-			links("SDL2/x64/SDL2")
-	end
+	includedirs(path.join(IOQ3_PATH, "code/SDL2/include"))
+	links { "SDL2" }
 end
 
 function setupGameDllProject(mod, name)
@@ -770,7 +738,7 @@ end
 
 group "game_qvm"
 
-function gameQvmProject(_mod, _qvm, _defines, _files)
+function gameQvmProject(_mod, _qvm, _defines, _files, _asmFile)
 	project(_mod .. "_" .. _qvm .. "_qvm")
 	kind "StaticLib"
 	files(_files)
@@ -787,12 +755,12 @@ function gameQvmProject(_mod, _qvm, _defines, _files)
 	for _,v in pairs(_files) do
 		local ext = path.getextension(v)
 		
-		if ext == ".asm" then
-			asmFiles = asmFiles .. v .. " "
-		elseif ext == ".c" then
+		if ext == ".c" then
 			asmFiles = asmFiles .. path.getbasename(v) .. ".asm "
 		end
 	end
+	
+	asmFiles = asmFiles .. _asmFile
 	
 	postbuildcommands
 	{
@@ -823,7 +791,6 @@ if not (_OPTIONS["disable-baseq3"] or _OPTIONS["disable-game-qvm"]) then
 		path.join(IOQ3_CODE_PATH, "cgame/cg_scoreboard.c"),
 		path.join(IOQ3_CODE_PATH, "cgame/cg_servercmds.c"),
 		path.join(IOQ3_CODE_PATH, "cgame/cg_snapshot.c"),
-		path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.asm"),
 		path.join(IOQ3_CODE_PATH, "cgame/cg_view.c"),
 		path.join(IOQ3_CODE_PATH, "cgame/cg_weapons.c"),
 		path.join(IOQ3_CODE_PATH, "game/bg_lib.c"),
@@ -880,7 +847,6 @@ if not (_OPTIONS["disable-baseq3"] or _OPTIONS["disable-game-qvm"]) then
 		path.join(IOQ3_CODE_PATH, "game/g_session.c"),
 		path.join(IOQ3_CODE_PATH, "game/g_spawn.c"),
 		path.join(IOQ3_CODE_PATH, "game/g_svcmds.c"),
-		path.join(IOQ3_CODE_PATH, "game/g_syscalls.asm"),
 		path.join(IOQ3_CODE_PATH, "game/g_target.c"),
 		path.join(IOQ3_CODE_PATH, "game/g_team.c"),
 		path.join(IOQ3_CODE_PATH, "game/g_team.h"),
@@ -943,13 +909,12 @@ if not (_OPTIONS["disable-baseq3"] or _OPTIONS["disable-game-qvm"]) then
 		path.join(IOQ3_CODE_PATH, "q3_ui/ui_video.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_math.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.c"),
-		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
-		path.join(IOQ3_CODE_PATH, "ui/ui_syscalls.asm")
+		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h")
 	}
 
-	gameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "cgame", "-DCGAME", baseq3_cgame_files)
-	gameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "qagame", "-DQAGAME", baseq3_qagame_files)
-	gameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "ui", "-DUI", baseq3_ui_files)
+	gameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "cgame", "-DCGAME", baseq3_cgame_files, path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.asm"))
+	gameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "qagame", "-DQAGAME", baseq3_qagame_files, path.join(IOQ3_CODE_PATH, "game/g_syscalls.asm"))
+	gameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "ui", "-DUI", baseq3_ui_files, path.join(IOQ3_CODE_PATH, "ui/ui_syscalls.asm"))
 end
 
 if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-qvm"]) then
@@ -975,7 +940,6 @@ if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-qvm"]) then
 		path.join(IOQ3_CODE_PATH, "cgame/cg_scoreboard.c"),
 		path.join(IOQ3_CODE_PATH, "cgame/cg_servercmds.c"),
 		path.join(IOQ3_CODE_PATH, "cgame/cg_snapshot.c"),
-		path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.asm"),
 		path.join(IOQ3_CODE_PATH, "cgame/cg_view.c"),
 		path.join(IOQ3_CODE_PATH, "cgame/cg_weapons.c"),
 		path.join(IOQ3_CODE_PATH, "game/bg_lib.c"),
@@ -1034,7 +998,6 @@ if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-qvm"]) then
 		path.join(IOQ3_CODE_PATH, "game/g_session.c"),
 		path.join(IOQ3_CODE_PATH, "game/g_spawn.c"),
 		path.join(IOQ3_CODE_PATH, "game/g_svcmds.c"),
-		path.join(IOQ3_CODE_PATH, "game/g_syscalls.asm"),
 		path.join(IOQ3_CODE_PATH, "game/g_target.c"),
 		path.join(IOQ3_CODE_PATH, "game/g_team.c"),
 		path.join(IOQ3_CODE_PATH, "game/g_team.h"),
@@ -1066,13 +1029,12 @@ if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-qvm"]) then
 		path.join(IOQ3_CODE_PATH, "ui/ui_players.c"),
 		path.join(IOQ3_CODE_PATH, "ui/ui_public.h"),
 		path.join(IOQ3_CODE_PATH, "ui/ui_shared.c"),
-		path.join(IOQ3_CODE_PATH, "ui/ui_shared.h"),
-		path.join(IOQ3_CODE_PATH, "ui/ui_syscalls.asm")
+		path.join(IOQ3_CODE_PATH, "ui/ui_shared.h")
 	}
 	
-	gameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame", "-DCGAME -DMISSIONPACK", missionpack_cgame_files)
-	gameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame", "-DQAGAME -DMISSIONPACK", missionpack_qagame_files)
-	gameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "ui", "-DUI -DMISSIONPACK", missionpack_ui_files)
+	gameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame", "-DCGAME -DMISSIONPACK", missionpack_cgame_files, path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.asm"))
+	gameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame", "-DQAGAME -DMISSIONPACK", missionpack_qagame_files, path.join(IOQ3_CODE_PATH, "game/g_syscalls.asm"))
+	gameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "ui", "-DUI -DMISSIONPACK", missionpack_ui_files, path.join(IOQ3_CODE_PATH, "ui/ui_syscalls.asm"))
 end
 
 group "lib"
@@ -1080,6 +1042,7 @@ group "lib"
 if not (_OPTIONS["disable-client"] or _OPTIONS["disable-ogg"]) then
 project "ogg"
 	kind "StaticLib"
+	characterset "MBCS"
 	files
 	{
 		path.join(OGG_PATH, "src/*.c")
@@ -1092,6 +1055,7 @@ project "ogg"
 
 project "opus"
 	kind "StaticLib"
+	characterset "MBCS"
 	defines { "OPUS_BUILD", "HAVE_LRINTF", "FLOATING_POINT", "USE_ALLOCA" }
 	files
 	{
@@ -1118,6 +1082,7 @@ project "opus"
 	
 project "vorbis"
 	kind "StaticLib"
+	characterset "MBCS"
 	files
 	{
 		path.join(VORBIS_PATH, "lib/*.c")
@@ -1136,7 +1101,72 @@ project "vorbis"
 end
 
 if not (_OPTIONS["disable-client"] and _OPTIONS["disable-server"]) then
+project "SDL2"
+	characterset "MBCS"
+	kind "SharedLib"
+	files
+	{
+		path.join(SDL_PATH, "include/*.h"),
+		path.join(SDL_PATH, "zlib/*.c"),
+		path.join(SDL_PATH, "src/*.c"),
+		path.join(SDL_PATH, "src/atomic/*.c"),
+		path.join(SDL_PATH, "src/audio/*.c"),
+		path.join(SDL_PATH, "src/audio/disk/*.c"),
+		path.join(SDL_PATH, "src/audio/dummy/*.c"),
+		path.join(SDL_PATH, "src/cpuinfo/*.c"),
+		path.join(SDL_PATH, "src/events/*.c"),
+		path.join(SDL_PATH, "src/file/*.c"),
+		path.join(SDL_PATH, "src/haptic/*.c"),
+		path.join(SDL_PATH, "src/joystick/*.c"),
+		path.join(SDL_PATH, "src/libm/*.c"),
+		path.join(SDL_PATH, "src/power/*.c"),
+		path.join(SDL_PATH, "src/render/opengl/*.c"),
+		path.join(SDL_PATH, "src/render/*.c"),
+		path.join(SDL_PATH, "src/render/opengles2/*.c"),
+		path.join(SDL_PATH, "src/render/software/*.c"),
+		path.join(SDL_PATH, "src/stdlib/*.c"),
+		path.join(SDL_PATH, "src/thread/*.c"),
+		path.join(SDL_PATH, "src/thread/generic/SDL_syscond.c"),
+		path.join(SDL_PATH, "src/timer/*.c"),
+		path.join(SDL_PATH, "src/video/dummy/*.c"),
+		path.join(SDL_PATH, "src/video/*.c"),
+		path.join(SDL_PATH, "src/audio/directsound/*.c"),
+		path.join(SDL_PATH, "src/audio/winmm/*.c"),
+		path.join(SDL_PATH, "src/audio/xaudio2/*.c"),
+		path.join(SDL_PATH, "src/core/windows/SDL_windows.c"),
+		path.join(SDL_PATH, "src/core/windows/SDL_xinput.c"),
+		path.join(SDL_PATH, "src/filesystem/windows/*.c"),
+		path.join(SDL_PATH, "src/haptic/windows/*.c"),
+		path.join(SDL_PATH, "src/joystick/windows/*.c"),
+		path.join(SDL_PATH, "src/loadso/windows/*.c"),
+		path.join(SDL_PATH, "src/power/windows/*.c"),
+		path.join(SDL_PATH, "src/render/direct3d/*.c"),
+		path.join(SDL_PATH, "src/timer/windows/*.c"),
+		path.join(SDL_PATH, "src/thread/windows/*.c"),
+		path.join(SDL_PATH, "src/video/windows/*.c"),
+		path.join(SDL_PATH, "src/main/windows/version.rc")
+	}
+	includedirs
+	{
+		path.join(SDL_PATH, "include"),
+		path.join(SDL_PATH, "src")
+	}
+	links
+	{
+		"imm32",
+		"ucrt", -- msvcrt linker error - VS bug?
+		"version",
+		"winmm"
+	}
+	
+project "SDL2main"
+	characterset "MBCS"
+	kind "StaticLib"
+	files { path.join(SDL_PATH, "src/main/windows/*.c") }
+	includedirs { path.join(SDL_PATH, "include") }
+
 project "zlib"
+	characterset "MBCS"
 	kind "StaticLib"
 	files { path.join(IOQ3_CODE_PATH, "zlib/*.c"), path.join(IOQ3_CODE_PATH, "zlib/*.h") }
 end
@@ -1147,13 +1177,19 @@ group "tool"
 
 project "lburg"
 	kind "ConsoleApp"
+	characterset "MBCS"
 	defines { "WIN32" }
 	files { path.join(IOQ3_CODE_PATH, "tools/lcc/lburg/*.c"), path.join(IOQ3_CODE_PATH, "tools/lcc/lburg/*.h") }
 
 project "lcc"
 	kind "ConsoleApp"
+	characterset "MBCS"
 	defines { "WIN32" }
-	files { path.join(IOQ3_CODE_PATH, "tools/lcc/etc/*.c") }
+	files
+	{
+		path.join(IOQ3_CODE_PATH, "tools/lcc/etc/bytecode.c"),
+		path.join(path.getabsolute("."), "lcc/lcc.c")
+	}
 	buildoptions
 	{
 		"/wd\"4273\"", -- "inconsistent dll linkage" getpid
@@ -1162,12 +1198,14 @@ project "lcc"
 
 project "q3asm"
 	kind "ConsoleApp"
+	characterset "MBCS"
 	defines { "WIN32" }
 	files { path.join(IOQ3_CODE_PATH, "tools/asm/*.c"), path.join(IOQ3_CODE_PATH, "tools/asm/*.h") }
 	buildoptions { "/wd\"4273\""} -- "inconsistent dll linkage" strupr
 	
 project "q3cpp"
 	kind "ConsoleApp"
+	characterset "MBCS"
 	defines { "WIN32" }
 	files { path.join(IOQ3_CODE_PATH, "tools/lcc/cpp/*.c"), path.join(IOQ3_CODE_PATH, "tools/lcc/cpp/*.h") }
 	buildoptions
@@ -1178,6 +1216,7 @@ project "q3cpp"
 
 project "q3rcc"
 	kind "ConsoleApp"
+	characterset "MBCS"
 	defines { "WIN32" }
 	files
 	{
