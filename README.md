@@ -1,14 +1,18 @@
 A Premake script for generating Visual Studio projects for [ioquake3](https://github.com/ioquake/ioq3).
 
+ioquake3 uses MinGW for Windows builds. There are Visual Studio projects in the offical repo, but they aren't maintained, and are incomplete and often broken.
+
+![screenshot](https://github.com/jpcy/ioq3-premake-msvc/raw/master/screenshot.png)
+
 ## Instructions
-1. Checkout [ioquake3](https://github.com/ioquake/ioq3) and this repository to the same parent directory.
-2. Run `vs2013.bat` or `vs2015.bat`.
+1. Clone [ioquake3](https://github.com/ioquake/ioq3) and this repository to the same parent directory.
+2. Run `vs2015.bat` or `vs2017.bat`.
 3. Open `build\ioquake3.sln` in Visual Studio and compile.
 
 The compiled binaries are written to `build\bin_*`. You can either manually copy them to your Quake 3 directory and run the ioquake3 executable, or read the section [Debugging ioquake3](#debugging-ioquake3) below.
 
 ## Options
-As an alternative to `vs2013.bat` and `vs2015.bat`, invoke premake directly with `premake5 [options] [action]`, where [options] are one or more of the following, and [action] is either vs2013 or vs2015.
+As an alternative to `vs2015.bat` and `vs2017.bat`, invoke premake directly with `premake5 [options] [action]`, where [options] are one or more of the following, and [action] is either vs2013 or vs2015.
 
 Option                    | Description
 ------------------------- | -------------------------------------
@@ -45,5 +49,5 @@ You should now be able to run ioquake3 with the Visual Studio debugger.
 
 To debug game code, add `+set sv_pure 0 +set vm_cgame 0 +set vm_game 0 +set vm_ui 0` to the command arguments.
 
-## Extras
-A work in progress renderer using [bgfx](https://github.com/bkaradzic/bgfx) to support multiple rendering APIs (OpenGL, D3D9, D3D11 etc.) is available [here](https://github.com/jpcy/ioq3-renderer-bgfx). Checkout to the same parent directory as [ioquake3](https://github.com/ioquake/ioq3) and [ioq3-premake-msvc](https://github.com/jpcy/ioq3-premake-msvc), then run premake again. Select the renderer in-game with `cl_renderer bgfx` and change the rendering backend with `r_backend` (both require a `vid_restart`).
+## BGFX renderer
+An unofficial renderer using [bgfx](https://github.com/bkaradzic/bgfx) is available [here](https://github.com/jpcy/ioq3-renderer-bgfx). To generate a project file for it, clone to the same parent directory as [ioquake3](https://github.com/ioquake/ioq3) and [ioq3-premake-msvc](https://github.com/jpcy/ioq3-premake-msvc), then run premake again. Select the renderer in the game console with `cl_renderer bgfx` (requires a `vid_restart`).
