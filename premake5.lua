@@ -1154,10 +1154,15 @@ project "SDL2"
 	links
 	{
 		"imm32",
-		"ucrt", -- msvcrt linker error - VS bug?
 		"version",
 		"winmm"
 	}
+	
+	-- msvcrt linker errors - VS bug?
+	configuration "Debug"
+		links { "ucrtd", "vcruntimed" }
+	configuration "Release"
+		links { "ucrt" }
 	
 project "SDL2main"
 	characterset "MBCS"
