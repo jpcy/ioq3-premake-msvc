@@ -449,14 +449,7 @@ project "renderer_opengl1"
 	
 	links
 	{
-		"user32",
-		"advapi32",
-		"winmm",
-		"wsock32",
-		"ws2_32",
 		"OpenGL32",
-		"psapi",
-		
 		-- Other projects
 		"SDL2",
 		"zlib"
@@ -558,14 +551,7 @@ project "renderer_opengl2"
 	
 	links
 	{
-		"user32",
-		"advapi32",
-		"winmm",
-		"wsock32",
-		"ws2_32",
 		"OpenGL32",
-		"psapi",
-		
 		-- Other projects
 		"SDL2",
 		"zlib"
