@@ -92,6 +92,7 @@ if _ACTION == nil then
 	return
 end
 
+local BUILD_PATH = path.join("build", _ACTION)
 local IOQ3_PATH = path.join(path.getabsolute(".."), "ioq3")
 
 if not os.isdir(IOQ3_PATH) then
@@ -112,7 +113,7 @@ end
 
 solution "ioquake3"
 	language "C"
-	location "build"
+	location(BUILD_PATH)
 	startproject "ioquake3"
 	platforms { "x86", "x64" }
 	configurations { "Release", "Debug", "Profile" }
@@ -137,16 +138,16 @@ solution "ioquake3"
 		defines "NDEBUG"
 		
 	configuration { "Debug", "x86" }
-		targetdir "build/bin_x86_debug"
+		targetdir(path.join(BUILD_PATH, "bin_x86_debug"))
 		
 	configuration { "Release or Profile", "x86" }
-		targetdir "build/bin_x86"
+		targetdir(path.join(BUILD_PATH, "bin_x86"))
 		
 	configuration { "Debug", "x64" }
-		targetdir "build/bin_x64_debug"
+		targetdir(path.join(BUILD_PATH, "bin_x64_debug"))
 		
 	configuration { "Release or Profile", "x64" }
-		targetdir "build/bin_x64"
+		targetdir(path.join(BUILD_PATH, "bin_x64"))
 		
 	configuration "x64"
 		defines { "_WIN64", "__WIN64__" }
@@ -486,34 +487,34 @@ project "renderer_opengl2"
 	files
 	{
 		-- Name the stringified GLSL files explicitly (without * wildcard) so they're added to the project even when they don't exist yet
-		"build/dynamic/renderergl2/bokeh_fp.c",
-		"build/dynamic/renderergl2/bokeh_vp.c",
-		"build/dynamic/renderergl2/calclevels4x_fp.c",
-		"build/dynamic/renderergl2/calclevels4x_vp.c",
-		"build/dynamic/renderergl2/depthblur_fp.c",
-		"build/dynamic/renderergl2/depthblur_vp.c",
-		"build/dynamic/renderergl2/dlight_fp.c",
-		"build/dynamic/renderergl2/dlight_vp.c",
-		"build/dynamic/renderergl2/down4x_fp.c",
-		"build/dynamic/renderergl2/down4x_vp.c",
-		"build/dynamic/renderergl2/fogpass_fp.c",
-		"build/dynamic/renderergl2/fogpass_vp.c",
-		"build/dynamic/renderergl2/generic_fp.c",
-		"build/dynamic/renderergl2/generic_vp.c",
-		"build/dynamic/renderergl2/lightall_fp.c",
-		"build/dynamic/renderergl2/lightall_vp.c",
-		"build/dynamic/renderergl2/pshadow_fp.c",
-		"build/dynamic/renderergl2/pshadow_vp.c",
-		"build/dynamic/renderergl2/shadowfill_fp.c",
-		"build/dynamic/renderergl2/shadowfill_vp.c",
-		"build/dynamic/renderergl2/shadowmask_fp.c",
-		"build/dynamic/renderergl2/shadowmask_vp.c",
-		"build/dynamic/renderergl2/ssao_fp.c",
-		"build/dynamic/renderergl2/ssao_vp.c",
-		"build/dynamic/renderergl2/texturecolor_fp.c",
-		"build/dynamic/renderergl2/texturecolor_vp.c",
-		"build/dynamic/renderergl2/tonemap_fp.c",
-		"build/dynamic/renderergl2/tonemap_vp.c",
+		path.join(BUILD_PATH, "dynamic/renderergl2/bokeh_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/bokeh_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/calclevels4x_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/calclevels4x_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/depthblur_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/depthblur_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/dlight_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/dlight_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/down4x_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/down4x_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/fogpass_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/fogpass_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/generic_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/generic_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/lightall_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/lightall_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/pshadow_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/pshadow_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/shadowfill_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/shadowfill_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/shadowmask_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/shadowmask_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/ssao_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/ssao_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/texturecolor_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/texturecolor_vp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/tonemap_fp.c"),
+		path.join(BUILD_PATH, "dynamic/renderergl2/tonemap_vp.c"),
 		path.join(IOQ3_CODE_PATH, "jpeg-8c/*.c"),
 		path.join(IOQ3_CODE_PATH, "jpeg-8c/*.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_math.c"),
@@ -536,7 +537,7 @@ project "renderer_opengl2"
 	-- The stringified GLSL files cause virtual paths to be a little too deeply nested
 	vpaths
 	{
-		["dynamic"] = "build/dynamic/renderergl2/*.c",
+		["dynamic"] = path.join(BUILD_PATH, "dynamic/renderergl2/*.c"),
 		["*"] = IOQ3_CODE_PATH
 	}
 	
@@ -565,7 +566,7 @@ project "renderer_opengl2"
 	configuration "**.glsl"
 		buildmessage "Stringifying %{file.name}"
 		buildcommands("cscript.exe \"" .. path.join(IOQ3_PATH, "misc/msvc/glsl_stringify.vbs") .. "\" //Nologo \"%{file.relpath}\" \"dynamic\\renderergl2\\%{file.basename}.c\"")
-		buildoutputs "build\\dynamic\\renderergl2\\%{file.basename}.c"
+		buildoutputs(path.join(BUILD_PATH, "dynamic\\renderergl2\\%{file.basename}.c"))
 end
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
@@ -583,16 +584,16 @@ function setupGameDllProject(mod, name)
 	end
 	
 	configuration { "Debug", "x86" }
-		targetdir("build/bin_x86_debug/" .. mod)
+		targetdir(path.join(BUILD_PATH, "bin_x86_debug/" .. mod))
 		targetname(name .. "x86")
 	configuration { "Release or Profile", "x86" }
-		targetdir("build/bin_x86/" .. mod)
+		targetdir(path.join(BUILD_PATH, "bin_x86/" .. mod))
 		targetname(name .. "x86")
 	configuration { "Debug", "x64" }
-		targetdir("build/bin_x64_debug/" .. mod)
+		targetdir(path.join(BUILD_PATH, "bin_x64_debug/" .. mod))
 		targetname(name .. "x86_64")
 	configuration { "Release or Profile", "x64" }
-		targetdir("build/bin_x64/" .. mod)
+		targetdir(path.join(BUILD_PATH, "bin_x64/" .. mod))
 		targetname(name .. "x86_64")
 	configuration {}
 	
@@ -1214,12 +1215,12 @@ project "q3rcc"
 		path.join(IOQ3_CODE_PATH, "tools/lcc/src/*.c"),
 		path.join(IOQ3_CODE_PATH, "tools/lcc/src/*.h"),
 		path.join(IOQ3_CODE_PATH, "tools/lcc/src/dagcheck.md"),
-		"build/dynamic/dagcheck.c"
+		path.join(BUILD_PATH, "dynamic/dagcheck.c")
 	}
 	
 	vpaths
 	{
-		["dynamic"] = "build/dynamic/*.c",
+		["dynamic"] = path.join(BUILD_PATH, "dynamic/*.c"),
 		["*"] = path.join(IOQ3_CODE_PATH, "tools/lcc/src")
 	}
 	
@@ -1235,5 +1236,5 @@ project "q3rcc"
 	configuration "**.md"
 		buildmessage "lburg %{file.basename}"
 		buildcommands("\"" .. path.join("%{cfg.targetdir}", "lburg.exe") .. "\" \"%{file.relpath}\" > \"dynamic\\%{file.basename}.c\"")
-		buildoutputs "build\\dynamic\\%{file.basename}.c"
+		buildoutputs(path.join(BUILD_PATH, "dynamic\\%{file.basename}.c"))
 end
