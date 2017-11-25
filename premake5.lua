@@ -118,37 +118,27 @@ solution "ioquake3"
 	platforms { "x86", "x64" }
 	configurations { "Release", "Debug", "Profile" }
 	defines { "_CRT_SECURE_NO_DEPRECATE" }
-	
 	configuration "platforms:x86"
 		architecture "x86"
-		
 	configuration "platforms:x64"
 		architecture "x64"
-	
 	configuration "Debug"
 		optimize "Debug"
 		defines { "_DEBUG" }
 		symbols "On"
-		
 	configuration "Profile"
 		defines "USE_PROFILER"
-				
 	configuration "Release or Profile"
 		optimize "Full"
 		defines "NDEBUG"
-		
 	configuration { "Debug", "x86" }
 		targetdir(path.join(BUILD_PATH, "bin_x86_debug"))
-		
 	configuration { "Release or Profile", "x86" }
 		targetdir(path.join(BUILD_PATH, "bin_x86"))
-		
 	configuration { "Debug", "x64" }
 		targetdir(path.join(BUILD_PATH, "bin_x64_debug"))
-		
 	configuration { "Release or Profile", "x64" }
 		targetdir(path.join(BUILD_PATH, "bin_x64"))
-		
 	configuration "x64"
 		defines { "_WIN64", "__WIN64__" }
 	
@@ -158,7 +148,6 @@ if not _OPTIONS["disable-client"] then
 project "ioquake3"
 	kind "WindowedApp"
 	characterset "MBCS"
-	
 	configuration "x64"
 		targetname "ioquake3.x86_64"
 		defines "__x86_64__"
@@ -166,7 +155,6 @@ project "ioquake3"
 		targetname "ioquake3.x86"
 		defines "__i386__"
 	configuration {}
-	
 	defines
 	{
 		"_WIN32",
@@ -180,11 +168,9 @@ project "ioquake3"
 		"USE_RENDERER_DLOPEN",
 		"USE_LOCAL_HEADERS"
 	}
-	
 	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
 	end
-
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "asm/ftola.asm"),
@@ -209,21 +195,17 @@ project "ioquake3"
 		"res/win_resource.rc",
 		"res/win_resource.h"
 	}
-	
 	excludes
 	{
 		path.join(IOQ3_CODE_PATH, "sys/win_resource.h")
 	}
-	
 	vpaths
 	{
 		["*"] = IOQ3_CODE_PATH
 	}
-	
 	configuration "x64"
 		files { path.join(IOQ3_CODE_PATH, "asm/vm_x86_64.asm") }
 	configuration {}
-	
 	excludes
 	{
 		path.join(IOQ3_CODE_PATH, "client/libmumblelink.*"),
@@ -233,7 +215,6 @@ project "ioquake3"
 		path.join(IOQ3_CODE_PATH, "qcommon/vm_sparc.*"),
 		path.join(IOQ3_CODE_PATH, "server/sv_rankings.c")
 	}
-	
 	includedirs
 	{
 		path.join(IOQ3_CODE_PATH, "AL"),
@@ -242,7 +223,6 @@ project "ioquake3"
 		path.join(IOQ3_CODE_PATH, "SDL2/include"),
 		path.join(IOQ3_CODE_PATH, "zlib")
 	}
-	
 	links
 	{
 		"user32",
@@ -253,13 +233,11 @@ project "ioquake3"
 		"OpenGL32",
 		"psapi",
 		"gdi32",
-
 		-- Other projects
 		"SDL2",
 		"SDL2main",
 		"zlib"
 	}
-	
 	if not _OPTIONS["disable-ogg"] then
 		defines
 		{
@@ -267,7 +245,6 @@ project "ioquake3"
 			"USE_CODEC_VORBIS",
 			"USE_VOIP"
 		}
-		
 		includedirs
 		{
 			path.join(OGG_PATH, "include"),
@@ -275,18 +252,13 @@ project "ioquake3"
 			path.join(OPUSFILE_PATH, "include"),
 			path.join(VORBIS_PATH, "include")
 		}
-		
 		links { "ogg", "opus", "vorbis" }
 	end
-	
-	-- for MSVC2012
-	linkoptions "/SAFESEH:NO"
-	
+	linkoptions "/SAFESEH:NO" -- for MSVC2012
 	configuration { "x86", "**.asm" }
 		buildmessage "Assembling..."
 		buildcommands('ml /c /Zi /Fo"%{cfg.objdir}/%{file.basename}.asm.obj" "%{file.relpath}"')
 		buildoutputs '%{cfg.objdir}/%{file.basename}.asm.obj'
-		
 	configuration { "x64", "**.asm" }
 		buildmessage "Assembling..."
 		buildcommands('ml64 /c /D idx64 /Zi /Fo"%{cfg.objdir}/%{file.basename}.asm.obj" "%{file.relpath}"')
@@ -297,13 +269,11 @@ if not _OPTIONS["disable-server"] then
 project "ioq3ded"
 	kind "ConsoleApp"
 	characterset "MBCS"
-	
 	configuration "x64"
 		targetname "ioq3ded.x86_64"
 	configuration "x86"
 		targetname "ioq3ded.x86"
 	configuration {}
-	
 	defines
 	{
 		"_WINSOCK_DEPRECATED_NO_WARNINGS",
@@ -312,11 +282,9 @@ project "ioq3ded"
 		"USE_VOIP",
 		"USE_LOCAL_HEADERS"
 	}
-	
 	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
 	end
-
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "asm/ftola.asm"),
@@ -340,21 +308,17 @@ project "ioq3ded"
 		"res/win_resource.rc",
 		"res/win_resource.h"
 	}
-	
 	excludes
 	{
 		path.join(IOQ3_CODE_PATH, "sys/win_resource.h")
 	}
-	
 	vpaths
 	{
 		["*"] = IOQ3_CODE_PATH
 	}
-	
 	configuration "x64"
 		files { path.join(IOQ3_CODE_PATH, "asm/vm_x86_64.asm") }
 	configuration {}
-	
 	excludes
 	{
 		path.join(IOQ3_CODE_PATH, "qcommon/vm_armv7l.c"),
@@ -363,28 +327,21 @@ project "ioq3ded"
 		path.join(IOQ3_CODE_PATH, "qcommon/vm_sparc.*"),
 		path.join(IOQ3_CODE_PATH, "server/sv_rankings.c")
 	}
-	
 	includedirs { path.join(IOQ3_CODE_PATH, "zlib") }
-	
 	links
 	{
 		"winmm",
 		"wsock32",
 		"ws2_32",
 		"psapi",
-		
 		-- Other projects
 		"zlib"
 	}
-	
-	-- for MSVC2012
-	linkoptions "/SAFESEH:NO"
-	
+	linkoptions "/SAFESEH:NO" -- for MSVC2012
 	configuration { "x86", "**.asm" }
 		buildmessage "Assembling..."
 		buildcommands('ml /c /Zi /Fo"%{cfg.objdir}/%{file.basename}.asm.obj" "%{file.relpath}"')
 		buildoutputs '%{cfg.objdir}/%{file.basename}.asm.obj'
-		
 	configuration { "x64", "**.asm" }
 		buildmessage "Assembling..."
 		buildcommands('ml64 /c /D idx64 /Zi /Fo"%{cfg.objdir}/%{file.basename}.asm.obj" "%{file.relpath}"')
@@ -397,13 +354,11 @@ if not _OPTIONS["disable-renderer-gl1"] then
 project "renderer_opengl1"
 	kind "SharedLib"
 	characterset "MBCS"
-	
 	configuration "x64"
 		targetname "renderer_opengl1_x86_64"
 	configuration "x86"
 		targetname "renderer_opengl1_x86"
 	configuration {}
-
 	defines
 	{
 		"_WIN32",
@@ -413,11 +368,9 @@ project "renderer_opengl1"
 		"USE_RENDERER_DLOPEN",
 		"USE_LOCAL_HEADERS"
 	}
-	
 	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
 	end
-	
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "jpeg-8c/*.c"),
@@ -437,7 +390,6 @@ project "renderer_opengl1"
 		path.join(IOQ3_CODE_PATH, "sdl/sdl_gamma.c"),
 		path.join(IOQ3_CODE_PATH, "sdl/sdl_glimp.c")
 	}
-	
 	includedirs
 	{
 		path.join(IOQ3_CODE_PATH, "AL"),
@@ -447,7 +399,6 @@ project "renderer_opengl1"
 		path.join(IOQ3_CODE_PATH, "zlib")
 		
 	}
-	
 	links
 	{
 		"OpenGL32",
@@ -455,7 +406,6 @@ project "renderer_opengl1"
 		"SDL2",
 		"zlib"
 	}
-	
 	configuration "x64"
 		buildoptions { "/wd\"4267\""} -- Silence size_t type conversion warnings
 end
@@ -464,13 +414,11 @@ if not _OPTIONS["disable-renderer-gl2"] then
 project "renderer_opengl2"
 	kind "SharedLib"
 	characterset "MBCS"
-	
 	configuration "x64"
 		targetname "renderer_opengl2_x86_64"
 	configuration "x86"
 		targetname "renderer_opengl2_x86"
 	configuration {}
-
 	defines
 	{
 		"_WIN32",
@@ -479,11 +427,9 @@ project "renderer_opengl2"
 		"USE_RENDERER_DLOPEN",
 		"USE_LOCAL_HEADERS"
 	}
-	
 	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
 	end
-
 	files
 	{
 		-- Name the stringified GLSL files explicitly (without * wildcard) so they're added to the project even when they don't exist yet
@@ -533,14 +479,12 @@ project "renderer_opengl2"
 		path.join(IOQ3_CODE_PATH, "sdl/sdl_gamma.c"),
 		path.join(IOQ3_CODE_PATH, "sdl/sdl_glimp.c")
 	}
-	
 	-- The stringified GLSL files cause virtual paths to be a little too deeply nested
 	vpaths
 	{
 		["dynamic"] = path.join(BUILD_PATH, "dynamic/renderergl2/*.c"),
 		["*"] = IOQ3_CODE_PATH
 	}
-	
 	includedirs
 	{
 		path.join(IOQ3_CODE_PATH, "SDL2/include"),
@@ -549,7 +493,6 @@ project "renderer_opengl2"
 		path.join(IOQ3_CODE_PATH, "zlib"),
 		path.join(IOQ3_CODE_PATH, "jpeg-8c")
 	}
-	
 	links
 	{
 		"OpenGL32",
@@ -557,12 +500,9 @@ project "renderer_opengl2"
 		"SDL2",
 		"zlib"
 	}
-	
 	configuration "x64"
 		buildoptions { "/wd\"4267\""} -- Silence size_t type conversion warnings
-		
 	configuration {}
-	
 	configuration "**.glsl"
 		buildmessage "Stringifying %{file.name}"
 		buildcommands("cscript.exe \"" .. path.join(IOQ3_PATH, "misc/msvc/glsl_stringify.vbs") .. "\" //Nologo \"%{file.relpath}\" \"dynamic\\renderergl2\\%{file.basename}.c\"")
@@ -578,11 +518,9 @@ end
 function setupGameDllProject(mod, name)
 	project(mod .. "_" .. name .. "_dll")
 	kind "SharedLib"
-	
 	if _OPTIONS["standalone"] then
 		defines "STANDALONE"
 	end
-	
 	configuration { "Debug", "x86" }
 		targetdir(path.join(BUILD_PATH, "bin_x86_debug/" .. mod))
 		targetname(name .. "x86")
@@ -596,7 +534,6 @@ function setupGameDllProject(mod, name)
 		targetdir(path.join(BUILD_PATH, "bin_x64/" .. mod))
 		targetname(name .. "x86_64")
 	configuration {}
-	
 	links "winmm"
 end
 
@@ -616,7 +553,6 @@ setupGameDllProject(_OPTIONS["rename-baseq3"] or "baseq3", "cgame")
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/surfaceflags.h")
 	}
-	
 	excludes
 	{
 		path.join(IOQ3_CODE_PATH, "cgame/cg_newdraw.c"),
@@ -633,7 +569,6 @@ setupGameDllProject(_OPTIONS["rename-baseq3"] or "baseq3", "qagame")
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/surfaceflags.h")
 	}
-	
 	excludes
 	{
 		path.join(IOQ3_CODE_PATH, "game/bg_lib.*"),
@@ -651,7 +586,6 @@ setupGameDllProject(_OPTIONS["rename-baseq3"] or "baseq3", "ui")
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
 		path.join(IOQ3_CODE_PATH, "ui/ui_syscalls.c")
 	}
-	
 	excludes
 	{
 		path.join(IOQ3_CODE_PATH, "q3_ui/ui_loadconfig.c"),
@@ -668,7 +602,6 @@ if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-dll"]) then
 
 setupGameDllProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame")
 	defines	{ "MISSIONPACK" }
-	
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "cgame/*.c"),
@@ -681,7 +614,6 @@ setupGameDllProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame")
 		path.join(IOQ3_CODE_PATH, "qcommon/surfaceflags.h"),
 		path.join(IOQ3_CODE_PATH, "ui/ui_shared.*")
 	}
-	
 	excludes
 	{
 		path.join(IOQ3_CODE_PATH, "game/bg_lib.*")
@@ -689,7 +621,6 @@ setupGameDllProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame")
 
 setupGameDllProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame")
 	defines	{ "MISSIONPACK" }
-	
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/*.c"),
@@ -699,7 +630,6 @@ setupGameDllProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame")
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/surfaceflags.h")
 	}
-	
 	excludes
 	{
 		path.join(IOQ3_CODE_PATH, "game/bg_lib.*"),
@@ -708,7 +638,6 @@ setupGameDllProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame")
 
 setupGameDllProject(_OPTIONS["rename-missionpack"] or "missionpack", "ui")
 	defines	{ "MISSIONPACK" }
-	
 	files
 	{
 		path.join(IOQ3_CODE_PATH, "game/bg_misc.c"),
@@ -719,7 +648,6 @@ setupGameDllProject(_OPTIONS["rename-missionpack"] or "missionpack", "ui")
 		path.join(IOQ3_CODE_PATH, "ui/*.c"),
 		path.join(IOQ3_CODE_PATH, "ui/*.h")
 	}
-	
 	links { "odbc32", "odbccp32" }
 end
 
@@ -730,25 +658,19 @@ function gameQvmProject(_mod, _qvm, _defines, _files, _asmFile)
 	kind "StaticLib"
 	files(_files)
 	links { "lcc", "q3asm", "q3cpp", "q3rcc" } -- build dependencies
-	
 	configuration "**.c"
 		buildmessage "lcc %{file.name}"
 		buildcommands("\"%{cfg.targetdir}\\lcc.exe\" " .. _defines .. " -Wo-lccdir=\"%{cfg.targetdir}\" -o \"%{cfg.objdir}\\%{file.basename}.asm\" \"%{file.relpath}\"")
 		buildoutputs "%{cfg.objdir}\\%{file.basename}.asm"
 	configuration {}
-	
 	local asmFiles = ""
-	
 	for _,v in pairs(_files) do
 		local ext = path.getextension(v)
-		
 		if ext == ".c" then
 			asmFiles = asmFiles .. path.getbasename(v) .. ".asm "
 		end
 	end
-	
 	asmFiles = asmFiles .. _asmFile
-	
 	postbuildcommands
 	{
 		"cd %{cfg.objdir}",
@@ -792,7 +714,6 @@ if not (_OPTIONS["disable-baseq3"] or _OPTIONS["disable-game-qvm"]) then
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/surfaceflags.h")
 	}
-
 	local baseq3_qagame_files =
 	{
 		path.join(IOQ3_CODE_PATH, "game/g_main.c"), -- must be first for q3asm
@@ -848,7 +769,6 @@ if not (_OPTIONS["disable-baseq3"] or _OPTIONS["disable-game-qvm"]) then
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/surfaceflags.h")
 	}
-
 	local baseq3_ui_files =
 	{
 		path.join(IOQ3_CODE_PATH, "q3_ui/ui_main.c"), -- must be first for q3asm
@@ -898,7 +818,6 @@ if not (_OPTIONS["disable-baseq3"] or _OPTIONS["disable-game-qvm"]) then
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.c"),
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h")
 	}
-
 	gameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "cgame", "-DCGAME", baseq3_cgame_files, path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.asm"))
 	gameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "qagame", "-DQAGAME", baseq3_qagame_files, path.join(IOQ3_CODE_PATH, "game/g_syscalls.asm"))
 	gameQvmProject(_OPTIONS["rename-baseq3"] or "baseq3", "ui", "-DUI", baseq3_ui_files, path.join(IOQ3_CODE_PATH, "ui/ui_syscalls.asm"))
@@ -943,7 +862,6 @@ if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-qvm"]) then
 		path.join(IOQ3_CODE_PATH, "ui/ui_shared.c"),
 		path.join(IOQ3_CODE_PATH, "ui/ui_shared.h")
 	}
-	
 	local missionpack_qagame_files =
 	{
 		path.join(IOQ3_CODE_PATH, "game/g_main.c"), -- must be first for q3asm
@@ -999,7 +917,6 @@ if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-qvm"]) then
 		path.join(IOQ3_CODE_PATH, "qcommon/q_shared.h"),
 		path.join(IOQ3_CODE_PATH, "qcommon/surfaceflags.h")
 	}
-	
 	local missionpack_ui_files =
 	{
 		path.join(IOQ3_CODE_PATH, "ui/ui_main.c"), -- must be first for q3asm
@@ -1018,7 +935,6 @@ if not (_OPTIONS["disable-missionpack"] or _OPTIONS["disable-game-qvm"]) then
 		path.join(IOQ3_CODE_PATH, "ui/ui_shared.c"),
 		path.join(IOQ3_CODE_PATH, "ui/ui_shared.h")
 	}
-	
 	gameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "cgame", "-DCGAME -DMISSIONPACK", missionpack_cgame_files, path.join(IOQ3_CODE_PATH, "cgame/cg_syscalls.asm"))
 	gameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "qagame", "-DQAGAME -DMISSIONPACK", missionpack_qagame_files, path.join(IOQ3_CODE_PATH, "game/g_syscalls.asm"))
 	gameQvmProject(_OPTIONS["rename-missionpack"] or "missionpack", "ui", "-DUI -DMISSIONPACK", missionpack_ui_files, path.join(IOQ3_CODE_PATH, "ui/ui_syscalls.asm"))
@@ -1030,15 +946,8 @@ if not (_OPTIONS["disable-client"] or _OPTIONS["disable-ogg"]) then
 project "ogg"
 	kind "StaticLib"
 	characterset "MBCS"
-	files
-	{
-		path.join(OGG_PATH, "src/*.c")
-	}
-	
-	includedirs
-	{
-		path.join(OGG_PATH, "include")
-	}
+	files { path.join(OGG_PATH, "src/*.c") }
+	includedirs { path.join(OGG_PATH, "include") }
 
 project "opus"
 	kind "StaticLib"
@@ -1052,7 +961,6 @@ project "opus"
 		path.join(OPUS_PATH, "src/*.c"),
 		path.join(OPUSFILE_PATH, "src/*.c")
 	}
-	
 	includedirs
 	{
 		path.join(OGG_PATH, "include"),
@@ -1070,10 +978,7 @@ project "opus"
 project "vorbis"
 	kind "StaticLib"
 	characterset "MBCS"
-	files
-	{
-		path.join(VORBIS_PATH, "lib/*.c")
-	}
+	files { 	path.join(VORBIS_PATH, "lib/*.c") }
 	includedirs
 	{
 		path.join(OGG_PATH, "include"),
@@ -1144,13 +1049,12 @@ project "SDL2"
 		"version",
 		"winmm"
 	}
-	
 	-- msvcrt linker errors - VS bug?
 	configuration "Debug"
 		links { "ucrtd", "vcruntimed" }
 	configuration "Release"
 		links { "ucrt" }
-	
+
 project "SDL2main"
 	characterset "MBCS"
 	kind "StaticLib"
@@ -1217,22 +1121,18 @@ project "q3rcc"
 		path.join(IOQ3_CODE_PATH, "tools/lcc/src/dagcheck.md"),
 		path.join(BUILD_PATH, "dynamic/dagcheck.c")
 	}
-	
 	vpaths
 	{
 		["dynamic"] = path.join(BUILD_PATH, "dynamic/*.c"),
 		["*"] = path.join(IOQ3_CODE_PATH, "tools/lcc/src")
 	}
-	
 	includedirs { path.join(IOQ3_CODE_PATH, "tools/lcc/src") } -- for dagcheck.c
 	links { "lburg" } -- build dependency
-	
 	buildoptions
 	{
 		"/wd\"4018\"", -- "signed/unsigned mismatch"
 		"/wd\"4244\"" -- "conversion from 'x' to 'y', possible loss of data"
 	}
-
 	configuration "**.md"
 		buildmessage "lburg %{file.basename}"
 		buildcommands("\"" .. path.join("%{cfg.targetdir}", "lburg.exe") .. "\" \"%{file.relpath}\" > \"dynamic\\%{file.basename}.c\"")
