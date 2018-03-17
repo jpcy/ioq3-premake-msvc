@@ -101,11 +101,13 @@ if not os.isdir(IOQ3_PATH) then
 end
 
 local IOQ3_CODE_PATH = path.join(IOQ3_PATH, "code")
-local OGG_PATH = path.join(IOQ3_CODE_PATH, "libogg-1.3.2")
-local OPUS_PATH = path.join(IOQ3_CODE_PATH, "opus-1.1.4")
-local OPUSFILE_PATH = path.join(IOQ3_CODE_PATH, "opusfile-0.8")
+local CURL_PATH = path.join(IOQ3_CODE_PATH, "curl-7.54.0")
+local JPEG_PATH = path.join(IOQ3_CODE_PATH, "jpeg-8c")
+local OGG_PATH = path.join(IOQ3_CODE_PATH, "libogg-1.3.3")
+local OPUS_PATH = path.join(IOQ3_CODE_PATH, "opus-1.2.1")
+local OPUSFILE_PATH = path.join(IOQ3_CODE_PATH, "opusfile-0.9")
 local SDL_PATH = path.join(path.getabsolute("."), "SDL2")
-local VORBIS_PATH = path.join(IOQ3_CODE_PATH, "libvorbis-1.3.5")
+local VORBIS_PATH = path.join(IOQ3_CODE_PATH, "libvorbis-1.3.6")
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
 	dofile(path.join(IOQ3_RENDERER_BGFX, "renderer_bgfx.lua"))
@@ -218,8 +220,8 @@ project "ioquake3"
 	includedirs
 	{
 		path.join(IOQ3_CODE_PATH, "AL"),
-		path.join(IOQ3_CODE_PATH, "jpeg-8c"),
-		path.join(IOQ3_CODE_PATH, "libcurl"),
+		JPEG_PATH,
+		CURL_PATH,
 		path.join(IOQ3_CODE_PATH, "SDL2/include"),
 		path.join(IOQ3_CODE_PATH, "zlib")
 	}
@@ -393,8 +395,8 @@ project "renderer_opengl1"
 	includedirs
 	{
 		path.join(IOQ3_CODE_PATH, "AL"),
-		path.join(IOQ3_CODE_PATH, "jpeg-8c"),
-		path.join(IOQ3_CODE_PATH, "libcurl"),
+		JPEG_PATH,
+		CURL_PATH,
 		path.join(IOQ3_CODE_PATH, "SDL2/include"),
 		path.join(IOQ3_CODE_PATH, "zlib")
 		
@@ -491,7 +493,7 @@ project "renderer_opengl2"
 		path.join(IOQ3_CODE_PATH, "libcurl"),
 		path.join(IOQ3_CODE_PATH, "AL"),
 		path.join(IOQ3_CODE_PATH, "zlib"),
-		path.join(IOQ3_CODE_PATH, "jpeg-8c")
+		JPEG_PATH
 	}
 	links
 	{
