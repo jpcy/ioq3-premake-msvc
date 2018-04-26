@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -111,7 +111,7 @@ UIKit_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
+int UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
 {
     @autoreleasepool {
         SDLEAGLContext *context = (__bridge SDLEAGLContext *) SDL_GL_GetCurrentContext();
@@ -127,6 +127,7 @@ void UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
          * We don't pump events here because we don't want iOS application events
          * (low memory, terminate, etc.) to happen inside low level rendering. */
     }
+    return 0;
 }
 
 SDL_GLContext
@@ -140,10 +141,19 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
         EAGLSharegroup *sharegroup = nil;
         CGFloat scale = 1.0;
         int samples = 0;
+        int major = _this->gl_config.major_version;
+        int minor = _this->gl_config.minor_version;
 
         /* The EAGLRenderingAPI enum values currently map 1:1 to major GLES
          * versions. */
-        EAGLRenderingAPI api = _this->gl_config.major_version;
+        EAGLRenderingAPI api = major;
+
+        /* iOS currently doesn't support GLES >3.0. iOS 6 also only supports up
+         * to GLES 2.0. */
+        if (major > 3 || (major == 3 && (minor > 0 || !UIKit_IsSystemVersionAtLeast(7.0)))) {
+            SDL_SetError("OpenGL ES %d.%d context could not be created", major, minor);
+            return NULL;
+        }
 
         if (_this->gl_config.multisamplebuffers > 0) {
             samples = _this->gl_config.multisamplesamples;
@@ -214,6 +224,24 @@ UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
          * here. The context's view will be detached from its window when the
          * context is deallocated. */
         CFRelease(context);
+    }
+}
+
+void
+UIKit_GL_RestoreCurrentContext(void)
+{
+    @autoreleasepool {
+        /* Some iOS system functionality (such as Dictation on the on-screen
+         keyboard) uses its own OpenGL ES context but doesn't restore the
+         previous one when it's done. This is a workaround to make sure the
+         expected SDL-created OpenGL ES context is active after the OS is
+         finished running its own code for the frame. If this isn't done, the
+         app may crash or have other nasty symptoms when Dictation is used.
+         */
+        EAGLContext *context = (__bridge EAGLContext *) SDL_GL_GetCurrentContext();
+        if (context != NULL && [EAGLContext currentContext] != context) {
+            [EAGLContext setCurrentContext:context];
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,11 +23,6 @@
 
 #if SDL_VIDEO_DRIVER_WAYLAND
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
-#include <errno.h>
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <fcntl.h>
@@ -70,7 +65,6 @@ wayland_create_tmp_file(off_t size)
 
     xdg_path = SDL_getenv("XDG_RUNTIME_DIR");
     if (!xdg_path) {
-        errno = ENOENT;
         return -1;
     }
 
@@ -116,8 +110,7 @@ create_buffer_from_shm(Wayland_CursorData *d,
     shm_fd = wayland_create_tmp_file(size);
     if (shm_fd < 0)
     {
-        fprintf(stderr, "creating mouse cursor buffer failed!\n");
-        return -1;
+        return SDL_SetError("Creating mouse cursor buffer failed.");
     }
 
     d->shm_data = mmap(NULL,
@@ -128,8 +121,8 @@ create_buffer_from_shm(Wayland_CursorData *d,
                        0);
     if (d->shm_data == MAP_FAILED) {
         d->shm_data = NULL;
-        fprintf (stderr, "mmap () failed\n");
         close (shm_fd);
+        return SDL_SetError("mmap() failed.");
     }
 
     shm_pool = wl_shm_create_pool(data->shm, shm_fd, size);
@@ -159,6 +152,11 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         SDL_VideoDevice *vd = SDL_GetVideoDevice ();
         SDL_VideoData *wd = (SDL_VideoData *) vd->driverdata;
         Wayland_CursorData *data = calloc (1, sizeof (Wayland_CursorData));
+        if (!data) {
+            SDL_OutOfMemory();
+            free(cursor);
+            return NULL;
+        }
         cursor->driverdata = (void *) data;
 
         /* Assume ARGB8888 */
@@ -169,7 +167,7 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         if (create_buffer_from_shm (data,
                                     surface->w,
                                     surface->h,
-                                    WL_SHM_FORMAT_XRGB8888) < 0)
+                                    WL_SHM_FORMAT_ARGB8888) < 0)
         {
             free (cursor->driverdata);
             free (cursor);
@@ -187,6 +185,8 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         data->hot_y = hot_y;
         data->w = surface->w;
         data->h = surface->h;
+    } else {
+        SDL_OutOfMemory();
     }
 
     return cursor;
@@ -200,6 +200,11 @@ CreateCursorFromWlCursor(SDL_VideoData *d, struct wl_cursor *wlcursor)
     cursor = calloc(1, sizeof (*cursor));
     if (cursor) {
         Wayland_CursorData *data = calloc (1, sizeof (Wayland_CursorData));
+        if (!data) {
+            SDL_OutOfMemory();
+            free(cursor);
+            return NULL;
+        }
         cursor->driverdata = (void *) data;
 
         data->buffer = WAYLAND_wl_cursor_image_get_buffer(wlcursor->images[0]);
@@ -322,13 +327,13 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
     {
         Wayland_CursorData *data = cursor->driverdata;
 
-        wl_surface_attach(data->surface, data->buffer, 0, 0);
-        wl_surface_damage(data->surface, 0, 0, data->w, data->h);
-        wl_surface_commit(data->surface);
         wl_pointer_set_cursor (pointer, 0,
                                data->surface,
                                data->hot_x,
                                data->hot_y);
+        wl_surface_attach(data->surface, data->buffer, 0, 0);
+        wl_surface_damage(data->surface, 0, 0, data->w, data->h);
+        wl_surface_commit(data->surface);
     }
     else
     {
@@ -356,7 +361,13 @@ Wayland_WarpMouseGlobal(int x, int y)
 static int
 Wayland_SetRelativeMouseMode(SDL_bool enabled)
 {
-    return SDL_Unsupported();
+    SDL_VideoDevice *vd = SDL_GetVideoDevice();
+    SDL_VideoData *data = (SDL_VideoData *) vd->driverdata;
+
+    if (enabled)
+        return Wayland_input_lock_pointer(data->input);
+    else
+        return Wayland_input_unlock_pointer(data->input);
 }
 
 void
@@ -381,23 +392,5 @@ Wayland_FiniMouse(void)
     /* This effectively assumes that nobody else
      * touches SDL_Mouse which is effectively
      * a singleton */
-
-    SDL_Mouse *mouse = SDL_GetMouse();
-
-    /* Free the current cursor if not the same pointer as
-     * the default cursor */
-    if (mouse->def_cursor != mouse->cur_cursor)
-        Wayland_FreeCursor (mouse->cur_cursor);
-
-    Wayland_FreeCursor (mouse->def_cursor);
-    mouse->def_cursor = NULL;
-    mouse->cur_cursor = NULL;
-
-    mouse->CreateCursor =  NULL;
-    mouse->CreateSystemCursor = NULL;
-    mouse->ShowCursor = NULL;
-    mouse->FreeCursor = NULL;
-    mouse->WarpMouse = NULL;
-    mouse->SetRelativeMouseMode = NULL;
 }
 #endif  /* SDL_VIDEO_DRIVER_WAYLAND */

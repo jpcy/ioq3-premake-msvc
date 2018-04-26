@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,6 +33,7 @@
 #include "SDL_xinputhaptic_c.h"
 #include "../../core/windows/SDL_xinput.h"
 #include "../../joystick/windows/SDL_windowsjoystick_c.h"
+#include "../../thread/SDL_systhread.h"
 
 /*
  * Internal stuff.
@@ -43,8 +44,7 @@ static SDL_bool loaded_xinput = SDL_FALSE;
 int
 SDL_XINPUT_HapticInit(void)
 {
-    const char *env = SDL_GetHint(SDL_HINT_XINPUT_ENABLED);
-    if (!env || SDL_atoi(env)) {
+    if (SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, SDL_TRUE)) {
         loaded_xinput = (WIN_LoadXInputDLL() == 0);
     }
 
@@ -146,7 +146,7 @@ SDL_RunXInputHaptic(void *arg)
 {
     struct haptic_hwdata *hwdata = (struct haptic_hwdata *) arg;
 
-    while (!hwdata->stopThread) {
+    while (!SDL_AtomicGet(&hwdata->stopThread)) {
         SDL_Delay(50);
         SDL_LockMutex(hwdata->mutex);
         /* If we're currently running and need to stop... */
@@ -205,17 +205,8 @@ SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 userid)
     }
 
     SDL_snprintf(threadName, sizeof(threadName), "SDLXInputDev%d", (int)userid);
+    haptic->hwdata->thread = SDL_CreateThreadInternal(SDL_RunXInputHaptic, threadName, 64 * 1024, haptic->hwdata);
 
-#if defined(__WIN32__) && !defined(HAVE_LIBC)  /* !!! FIXME: this is nasty. */
-#undef SDL_CreateThread
-#if SDL_DYNAMIC_API
-    haptic->hwdata->thread = SDL_CreateThread_REAL(SDL_RunXInputHaptic, threadName, haptic->hwdata, NULL, NULL);
-#else
-    haptic->hwdata->thread = SDL_CreateThread(SDL_RunXInputHaptic, threadName, haptic->hwdata, NULL, NULL);
-#endif
-#else
-    haptic->hwdata->thread = SDL_CreateThread(SDL_RunXInputHaptic, threadName, haptic->hwdata);
-#endif
     if (haptic->hwdata->thread == NULL) {
         SDL_DestroyMutex(haptic->hwdata->mutex);
         SDL_free(haptic->effects);
@@ -261,7 +252,7 @@ SDL_XINPUT_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 void
 SDL_XINPUT_HapticClose(SDL_Haptic * haptic)
 {
-    haptic->hwdata->stopThread = 1;
+    SDL_AtomicSet(&haptic->hwdata->stopThread, 1);
     SDL_WaitThread(haptic->hwdata->thread, NULL);
     SDL_DestroyMutex(haptic->hwdata->mutex);
 }
@@ -287,8 +278,9 @@ SDL_XINPUT_HapticUpdateEffect(SDL_Haptic * haptic, struct haptic_effect *effect,
 {
     XINPUT_VIBRATION *vib = &effect->hweffect->vibration;
     SDL_assert(data->type == SDL_HAPTIC_LEFTRIGHT);
-    vib->wLeftMotorSpeed = data->leftright.large_magnitude;
-    vib->wRightMotorSpeed = data->leftright.small_magnitude;
+    /* SDL_HapticEffect has max magnitude of 32767, XInput expects 65535 max, so multiply */
+    vib->wLeftMotorSpeed = data->leftright.large_magnitude * 2;
+    vib->wRightMotorSpeed = data->leftright.small_magnitude * 2;
     SDL_LockMutex(haptic->hwdata->mutex);
     if (haptic->hwdata->stopTicks) {  /* running right now? Update it. */
         XINPUTSETSTATE(haptic->hwdata->userid, vib);
