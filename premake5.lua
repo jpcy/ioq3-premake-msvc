@@ -1057,7 +1057,7 @@ project "SDL2"
 	-- msvcrt linker errors - VS bug?
 	configuration "Debug"
 		links { "ucrtd", "vcruntimed" }
-	configuration "Release"
+	configuration "Release or Profile"
 		links { "ucrt" }
 
 project "SDL2main"
