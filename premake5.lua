@@ -1012,12 +1012,15 @@ project "SDL2"
 		path.join(SDL_PATH, "src/file/*.c"),
 		path.join(SDL_PATH, "src/haptic/*.c"),
 		path.join(SDL_PATH, "src/joystick/*.c"),
+		path.join(SDL_PATH, "src/joystick/hidapi/*.c"),
 		path.join(SDL_PATH, "src/libm/*.c"),
 		path.join(SDL_PATH, "src/power/*.c"),
 		path.join(SDL_PATH, "src/render/*.c"),
 		path.join(SDL_PATH, "src/render/opengl/*.c"),
 		path.join(SDL_PATH, "src/render/opengles2/*.c"),
 		path.join(SDL_PATH, "src/render/software/*.c"),
+		path.join(SDL_PATH, "src/sensor/*.c"),
+		path.join(SDL_PATH, "src/sensor/dummy/*.c"),
 		path.join(SDL_PATH, "src/stdlib/*.c"),
 		path.join(SDL_PATH, "src/thread/*.c"),
 		path.join(SDL_PATH, "src/thread/generic/SDL_syscond.c"),
@@ -1034,6 +1037,7 @@ project "SDL2"
 		path.join(SDL_PATH, "src/core/windows/SDL_xinput.c"),
 		path.join(SDL_PATH, "src/filesystem/windows/*.c"),
 		path.join(SDL_PATH, "src/haptic/windows/*.c"),
+		path.join(SDL_PATH, "src/hidapi/windows/*.c"),
 		path.join(SDL_PATH, "src/joystick/windows/*.c"),
 		path.join(SDL_PATH, "src/loadso/windows/*.c"),
 		path.join(SDL_PATH, "src/power/windows/*.c"),
@@ -1051,6 +1055,7 @@ project "SDL2"
 	links
 	{
 		"imm32",
+		"setupapi",
 		"version",
 		"winmm"
 	}
