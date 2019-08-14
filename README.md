@@ -1,3 +1,7 @@
+## ioq3-premake-msvc 
+
+[![Appveyor CI Build Status](https://ci.appveyor.com/api/projects/status/github/jpcy/ioq3-premake-msvc?branch=master&svg=true)](https://ci.appveyor.com/project/jpcy/ioq3-premake-msvc)
+
 A Premake script for generating Visual Studio projects for [ioquake3](https://github.com/ioquake/ioq3).
 
 ioquake3 uses MinGW for Windows builds. There are Visual Studio projects in the offical repo, but they aren't maintained, and are incomplete and often broken.

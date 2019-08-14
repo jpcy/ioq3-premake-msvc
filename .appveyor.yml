@@ -1,0 +1,19 @@
+os:
+  - Visual Studio 2017
+
+environment:
+  matrix:
+    - ACTION: vs2015
+    - ACTION: vs2017
+
+platform:
+  - Win32
+    
+configuration:
+  - Release
+
+install:
+  - premake5.exe %ACTION%
+  
+build:
+  project: build\$(ACTION)\ioquake3.sln
