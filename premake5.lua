@@ -118,7 +118,7 @@ solution "ioquake3"
 	location(BUILD_PATH)
 	startproject "ioquake3"
 	platforms { "x86", "x64" }
-	configurations { "Release", "Debug", "Profile" }
+	configurations { "Release", "Debug" }
 	defines { "_CRT_SECURE_NO_DEPRECATE" }
 	configuration "platforms:x86"
 		architecture "x86"
@@ -128,18 +128,16 @@ solution "ioquake3"
 		optimize "Debug"
 		defines { "_DEBUG" }
 		symbols "On"
-	configuration "Profile"
-		defines "USE_PROFILER"
-	configuration "Release or Profile"
+	configuration "Release"
 		optimize "Full"
 		defines "NDEBUG"
 	configuration { "Debug", "x86" }
 		targetdir(path.join(BUILD_PATH, "bin_x86_debug"))
-	configuration { "Release or Profile", "x86" }
+	configuration { "Release", "x86" }
 		targetdir(path.join(BUILD_PATH, "bin_x86"))
 	configuration { "Debug", "x64" }
 		targetdir(path.join(BUILD_PATH, "bin_x64_debug"))
-	configuration { "Release or Profile", "x64" }
+	configuration { "Release", "x64" }
 		targetdir(path.join(BUILD_PATH, "bin_x64"))
 	configuration "x64"
 		defines { "_WIN64", "__WIN64__" }
@@ -526,13 +524,13 @@ function setupGameDllProject(mod, name)
 	configuration { "Debug", "x86" }
 		targetdir(path.join(BUILD_PATH, "bin_x86_debug/" .. mod))
 		targetname(name .. "x86")
-	configuration { "Release or Profile", "x86" }
+	configuration { "Release", "x86" }
 		targetdir(path.join(BUILD_PATH, "bin_x86/" .. mod))
 		targetname(name .. "x86")
 	configuration { "Debug", "x64" }
 		targetdir(path.join(BUILD_PATH, "bin_x64_debug/" .. mod))
 		targetname(name .. "x86_64")
-	configuration { "Release or Profile", "x64" }
+	configuration { "Release", "x64" }
 		targetdir(path.join(BUILD_PATH, "bin_x64/" .. mod))
 		targetname(name .. "x86_64")
 	configuration {}
@@ -1062,7 +1060,7 @@ project "SDL2"
 	-- msvcrt linker errors - VS bug?
 	configuration "Debug"
 		links { "ucrtd", "vcruntimed" }
-	configuration "Release or Profile"
+	configuration "Release"
 		links { "ucrt" }
 
 project "SDL2main"
