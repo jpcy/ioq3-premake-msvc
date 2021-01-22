@@ -5,9 +5,6 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   Windows:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        platform: [Win32, x64]
     steps:
     - uses: actions/checkout@v2
     - name: Clone ioquake3
@@ -23,4 +20,4 @@ jobs:
     - name: Build
       shell: cmd
       run: |
-        msbuild build\vs2019\ioquake3.sln /p:Configuration=Release /p:Platform="${{matrix.platform}}" /verbosity:minimal
+        msbuild build\vs2019\ioquake3.sln /p:Configuration=Release /p:Platform="Win32" /verbosity:minimal
