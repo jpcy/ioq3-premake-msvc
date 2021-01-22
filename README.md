@@ -1,6 +1,6 @@
 ## ioq3-premake-msvc 
 
-[![Appveyor CI Build Status](https://ci.appveyor.com/api/projects/status/github/jpcy/ioq3-premake-msvc?branch=master&svg=true)](https://ci.appveyor.com/project/jpcy/ioq3-premake-msvc)
+[![Actions Status](https://github.com/jpcy/ioq3-premake-msvc/workflows/build/badge.svg)](https://github.com/jpcy/ioq3-premake-msvc/actions) [![Appveyor CI Build Status](https://ci.appveyor.com/api/projects/status/github/jpcy/ioq3-premake-msvc?branch=master&svg=true)](https://ci.appveyor.com/project/jpcy/ioq3-premake-msvc)
 
 A Premake script for generating Visual Studio projects for [ioquake3](https://github.com/ioquake/ioq3).
 

@@ -1,0 +1,22 @@
+name: build
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  Windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        platform: [Win32, x64]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run premake
+      shell: powershell
+      run: |
+        .\premake5.exe vs2019
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+    - name: Build
+      shell: cmd
+      run: |
+        msbuild build\vs2019\ioquake3.sln /p:Configuration=Release /p:Platform="${{matrix.platform}}" /verbosity:minimal
