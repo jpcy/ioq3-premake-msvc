@@ -21,7 +21,7 @@ jobs:
     - name: Create artifact
       shell: cmd
       run: |
-	    cd build\vs2019\bin_x86
+        cd build\vs2019\bin_x86
         7z a ..\..\..\ioquake3_vs2019_x86.zip *.exe *.dll
     - uses: actions/upload-artifact@v2
       with:
