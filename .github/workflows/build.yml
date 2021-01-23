@@ -17,7 +17,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1
     - name: Build
       shell: cmd
-      run: build build\vs2019\ioquake3.sln /p:Configuration=Release /p:Platform="Win32" /verbosity:minimal
+      run: msbuild build\vs2019\ioquake3.sln /p:Configuration=Release /p:Platform="Win32" /verbosity:minimal
     - name: Create artifact
       shell: cmd
       run: |
