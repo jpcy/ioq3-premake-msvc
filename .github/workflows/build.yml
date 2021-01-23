@@ -9,15 +9,21 @@ jobs:
     - uses: actions/checkout@v2
     - name: Clone ioquake3
       shell: cmd
-      run: |
-        git clone https://github.com/ioquake/ioq3.git ../ioq3
+      run: git clone https://github.com/ioquake/ioq3.git ../ioq3
     - name: Run premake
       shell: powershell
-      run: |
-        .\premake5.exe vs2019
+      run: .\premake5.exe vs2019
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1
     - name: Build
       shell: cmd
+      run: sbuild build\vs2019\ioquake3.sln /p:Configuration=Release /p:Platform="Win32" /verbosity:minimal
+    - name: Create artifact
+      shell: cmd
       run: |
-        msbuild build\vs2019\ioquake3.sln /p:Configuration=Release /p:Platform="Win32" /verbosity:minimal
+	    cd build\vs2019\bin_x86
+        7z a ..\..\..\ioquake3_vs2019_x86.zip *.exe *.dll
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ioquake3_vs2019_x86
+        path: ioquake3_vs2019_x86.zip
