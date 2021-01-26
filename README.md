@@ -11,13 +11,13 @@ ioquake3 uses MinGW for Windows builds. There are Visual Studio projects in the 
 ## Instructions
 1. Update submodules to get SDL. `git submodule update`
 2. Clone [ioquake3](https://github.com/ioquake/ioq3) and this repository to the same parent directory.
-3. Run `vs2015.bat`, `vs2017.bat` or `vs2019.bat`.
+3. Run `vs2017.bat` or `vs2019.bat`.
 4. Open `build\vs201*\ioquake3.sln` in Visual Studio and compile.
 
 The compiled binaries are written to `build\vs201*\bin_*`. You can either manually copy them to your Quake 3 directory and run the ioquake3 executable, or read the section [Debugging ioquake3](#debugging-ioquake3) below.
 
 ## Options
-As an alternative to the batch files, invoke premake directly with `premake5 [options] [action]`, where [options] are one or more of the following, and [action] is either vs2015 or vs2017.
+As an alternative to the batch files, invoke premake directly with `premake5 [options] [action]`, where [options] are one or more of the following, and [action] is either vs2017 or vs 2019.
 
 Option                    | Description
 ------------------------- | -------------------------------------

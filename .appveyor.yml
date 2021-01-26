@@ -3,7 +3,6 @@ os:
 
 environment:
   matrix:
-    - ACTION: vs2015
     - ACTION: vs2017
 
 platform:
