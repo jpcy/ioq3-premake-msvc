@@ -100,7 +100,7 @@ local JPEG_PATH = path.join(IOQ3_CODE_PATH, "jpeg-8c")
 local OGG_PATH = path.join(IOQ3_CODE_PATH, "libogg-1.3.3")
 local OPUS_PATH = path.join(IOQ3_CODE_PATH, "opus-1.2.1")
 local OPUSFILE_PATH = path.join(IOQ3_CODE_PATH, "opusfile-0.9")
-local SDL_PATH = path.join(path.getabsolute("."), "SDL2")
+local SDL_PATH = path.join(path.getabsolute("."), "SDL")
 local VORBIS_PATH = path.join(IOQ3_CODE_PATH, "libvorbis-1.3.6")
 
 if not _OPTIONS["disable-renderer-bgfx"] and os.isdir(IOQ3_RENDERER_BGFX) then
@@ -990,6 +990,7 @@ if not (_OPTIONS["disable-client"] and _OPTIONS["disable-server"]) then
 project "SDL2"
 	characterset "MBCS"
 	kind "SharedLib"
+	defines { "DLL_EXPORT", "HAVE_LIBC" }
 	files
 	{
 		path.join(SDL_PATH, "include/*.h"),
@@ -1005,14 +1006,16 @@ project "SDL2"
 		path.join(SDL_PATH, "src/haptic/*.c"),
 		path.join(SDL_PATH, "src/joystick/*.c"),
 		path.join(SDL_PATH, "src/joystick/hidapi/*.c"),
+		path.join(SDL_PATH, "src/joystick/virtual/*.c"),
 		path.join(SDL_PATH, "src/libm/*.c"),
+		path.join(SDL_PATH, "src/locale/*.c"),
+		path.join(SDL_PATH, "src/misc/*.c"),
 		path.join(SDL_PATH, "src/power/*.c"),
 		path.join(SDL_PATH, "src/render/*.c"),
 		path.join(SDL_PATH, "src/render/opengl/*.c"),
 		path.join(SDL_PATH, "src/render/opengles2/*.c"),
 		path.join(SDL_PATH, "src/render/software/*.c"),
 		path.join(SDL_PATH, "src/sensor/*.c"),
-		path.join(SDL_PATH, "src/sensor/dummy/*.c"),
 		path.join(SDL_PATH, "src/stdlib/*.c"),
 		path.join(SDL_PATH, "src/thread/*.c"),
 		path.join(SDL_PATH, "src/thread/generic/SDL_syscond.c"),
@@ -1025,15 +1028,18 @@ project "SDL2"
 		path.join(SDL_PATH, "src/audio/wasapi/*.c"),
 		path.join(SDL_PATH, "src/audio/winmm/*.c"),
 		path.join(SDL_PATH, "src/audio/xaudio2/*.c"),
-		path.join(SDL_PATH, "src/core/windows/SDL_windows.c"),
-		path.join(SDL_PATH, "src/core/windows/SDL_xinput.c"),
+		path.join(SDL_PATH, "src/core/windows/*.c"),
 		path.join(SDL_PATH, "src/filesystem/windows/*.c"),
 		path.join(SDL_PATH, "src/haptic/windows/*.c"),
 		path.join(SDL_PATH, "src/hidapi/windows/*.c"),
 		path.join(SDL_PATH, "src/joystick/windows/*.c"),
 		path.join(SDL_PATH, "src/loadso/windows/*.c"),
+		path.join(SDL_PATH, "src/locale/windows/*.c"),
+		path.join(SDL_PATH, "src/misc/windows/*.c"),
 		path.join(SDL_PATH, "src/power/windows/*.c"),
 		path.join(SDL_PATH, "src/render/direct3d/*.c"),
+		path.join(SDL_PATH, "src/render/direct3d11/*.c"),
+		path.join(SDL_PATH, "src/sensor/windows/*.c"),
 		path.join(SDL_PATH, "src/timer/windows/*.c"),
 		path.join(SDL_PATH, "src/thread/windows/*.c"),
 		path.join(SDL_PATH, "src/video/windows/*.c"),

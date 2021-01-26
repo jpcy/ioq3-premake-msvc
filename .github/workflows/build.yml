@@ -7,6 +7,8 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: true
     - name: Clone ioquake3
       shell: cmd
       run: git clone https://github.com/ioquake/ioq3.git ../ioq3
