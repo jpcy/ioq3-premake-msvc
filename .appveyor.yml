@@ -12,8 +12,8 @@ configuration:
   - Release
 
 install:
-  - cmd: git submodule update
-  - cmd: git clone https://github.com/ioquake/ioq3.git ../ioq3
+  - git submodule update --init
+  - git clone https://github.com/ioquake/ioq3.git ../ioq3
   - premake5.exe --disable-game-qvm %ACTION%
   
 build:
