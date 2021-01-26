@@ -15,7 +15,7 @@ configuration:
 install:
   - cmd: git submodule update
   - cmd: git clone https://github.com/ioquake/ioq3.git ../ioq3
-  - premake5.exe %ACTION%
+  - premake5.exe --disable-game-qvm %ACTION%
   
 build:
   project: build\$(ACTION)\ioquake3.sln
